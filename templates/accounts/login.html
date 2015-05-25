@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+	    <h2>Login to your account</h2>
+
+	    {% if form.errors %}
+		<p>Your username and password didn't match. Please try again.</p>
+	    {% endif %}
+
+	    <form method="POST" action="?next={{ next|default:"/" }}" class="form-horizontal">
+		    {% csrf_token %}
+		    <div class="control-group">
+			    <label class="control-label" for="id_username">Username</label>
+			    <div class="controls">
+				    {{ form.username }}
+				     <input type="hidden" name="form" value="form1">				    
+			    </div>
+		    </div>
+		    <div class="control-group">
+			    <label class="control-label" for="id_password">Password</label>
+			    <div class="controls">
+				    {{ form.password }}
+			    </div>
+		    </div>
+		    <div class="control-group">
+			    <div class="controls">
+				    <label class="checkbox">
+					    <input type="checkbox"> Remember me <input type="submit" class="btn ml12" value="Sign In" />
+
+				    </label>
+			    </div>
+		    </div>
+	    </form>	
+	    <p>If you don't have an account, contact the administrator.
+
+</div>
+
+{% endblock %}
