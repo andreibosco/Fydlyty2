@@ -26,4 +26,6 @@ urlpatterns = [
 
     url( r'^$', index, { 'template_name': 'game/index.html' }, name = 'index' ),
 
+    url(r'^game/', include('Fydlyty2.game.urls')),
+
 ]

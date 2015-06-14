@@ -4,39 +4,45 @@
 
 {% block content %}
 
-<div class="row">
-
-	    <h2>Login to your account</h2>
-
+<div class="row col-sm-offset-3">
+    <div class="col-sm-12">
+        <h1 class="page-header">Login to your account</h1>
+    </div>
+    <div class="clearfix"></div>
 	    {% if form.errors %}
-		<p>Your username and password didn't match. Please try again.</p>
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                Your username and password didn't match. Please try again.
+            </div>
 	    {% endif %}
 
-	    <form method="POST" action="?next={{ next|default:"/" }}" class="form-horizontal">
+	    <form method="POST" action="?next={{ next|default:'/' }}" class="form-horizontal">
 		    {% csrf_token %}
-		    <div class="control-group">
-			    <label class="control-label" for="id_username">Username</label>
+		    <div class="form-group">
+			    <label class="col-sm-2 control-label">Username</label>
 			    <div class="controls">
 				    {{ form.username }}
-				     <input type="hidden" name="form" value="form1">				    
 			    </div>
 		    </div>
-		    <div class="control-group">
-			    <label class="control-label" for="id_password">Password</label>
+		    <div class="form-group">
+			    <label class="col-sm-2 control-label">Password</label>
 			    <div class="controls">
 				    {{ form.password }}
 			    </div>
 		    </div>
-		    <div class="control-group">
-			    <div class="controls">
-				    <label class="checkbox">
-					    <input type="checkbox"> Remember me <input type="submit" class="btn ml12" value="Sign In" />
-
-				    </label>
-			    </div>
-		    </div>
+            <div class="form-group">
+                <div class="col-sm-offset-1 col-sm-10">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" class="mt10"> Remember me <input type="submit" class="btn ml12" value="Sign In" />
+                        </label>
+                    </div>
+                    <p class="small-text mt10">If you don't have an account, contact the administrator.</p>
+                </div>
+            </div>
 	    </form>	
-	    <p>If you don't have an account, contact the administrator.
+
 
 </div>
 

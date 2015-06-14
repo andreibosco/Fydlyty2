@@ -1,0 +1,10 @@
+.mt10 {margin-top:10px !important;}
+
+.footer{font-size:11px; color:#777;}
+
+#footernav{list-style:none; margin:0; }
+#footernav li{display:inline-block; margin-right:10px;}
+#footernav a{color:#777; font-size:11px;}
+#footernav a:hover{color:#C4161C; text-decoration:underline;}
+
+.small-text{font-size:11px; color:#777;}
