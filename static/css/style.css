@@ -1,3 +1,4 @@
+.mt7 {margin-top:7px !important;}
 .mt10 {margin-top:10px !important;}
 
 .footer{font-size:11px; color:#777;}
@@ -8,3 +9,9 @@
 #footernav a:hover{color:#C4161C; text-decoration:underline;}
 
 .small-text{font-size:11px; color:#777;}
+
+.form-horizontal .control-label{
+   text-align:left !important;
+}
+
+.pageHeading{font-size:35px; border-bottom:1px solid #f4b800; margin-bottom:30px;}
