@@ -11,7 +11,7 @@ class Scenario( models.Model ):
     a background, character, script, and role of player in the game
     """
     title = models.CharField(max_length = 100)
-    background = models.ImageField(_('background image'), upload_to = "Fydlyty2/media/BackgroundImages/")
+    background = models.ImageField(_('background image'), upload_to = "BackgroundImages/")
     role = models.CharField(max_length = 50, blank = True, null = True)
 
     def __unicode__(self):
