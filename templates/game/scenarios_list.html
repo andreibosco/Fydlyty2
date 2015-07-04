@@ -14,30 +14,21 @@ List of scenarios
         <div class="list-group ml10">
             <div class="list-group-item active">
                 <h4 class="list-group-item-heading active">Basic Scenarios
-                <a href="{% url 'create_scenario' %}" class="plus" title="Create a new basic scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
+                {% ifequal profile.role 'in' %}
+                    <a href="{% url 'create_scenario' %}" class="plus" title="Create a new basic scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
+                {% endifequal %}
             </div>
 
-            {% for basic_scenario in basic_scenarios %}
-                <a href="#" class="list-group-item">
-                    <h4 class="list-group-item-heading">{{ basic_scenario.title }}</h4>
-                    <p class="list-group-item-text">Some discription for scenario</p>
-                </a>
-            {% endfor %}
-
-        </div>
-
-        <div class="list-group ml10">
-            <div class="list-group-item active">
-                <h4 class="list-group-item-heading active">Animated Scenarios
-                <a href="#" class="plus" title="Create a new animated scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
-            </div>
-
-            {% for basic_scenario in basic_scenarios %}
-                <a href="#" class="list-group-item">
-                    <h4 class="list-group-item-heading">{{ basic_scenario.title }}</h4>
-                    <p class="list-group-item-text">Some discription for scenario</p>
-                </a>
-            {% endfor %}
+            {% if basic_scenarios %}
+                {% for basic_scenario in basic_scenarios %}
+                    <a href="{% url 'game' basic_scenario.id %}" class="list-group-item">
+                        <h4 class="list-group-item-heading">{{ basic_scenario.scenario.title }}</h4>
+                        <p class="list-group-item-text">Some description for scenario</p>
+                    </a>
+                {% endfor %}
+                {% else %}
+                    <p class="small-text mt10">No scenarios added to the system.</p>
+            {% endif %}
 
         </div>
 

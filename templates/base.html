@@ -43,7 +43,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">Fydlyty</a>
+                <a class="navbar-brand" href="{% url 'index' %}">Fydlyty</a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -52,11 +52,13 @@
                         <a href="#">About</a>
                     </li>
                     <li>
-                        <a href="#">Services</a>
+                        <a href="{% url 'scenarios_list' %}">Scenarios</a>
                     </li>
-                    <li>
-                        <a href="#">Contact</a>
-                    </li>
+                    {% if user.is_authenticated %}
+			            <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a>
+		            {% else %}
+			            <li><a href="{% url 'django.contrib.auth.views.login' %}">Login</a>
+		            {% endif %}
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -68,13 +70,14 @@
     <div class="container">
 
         {% block content %}{% endblock %}
+
         <hr>
         <div class="footer">
             <ul id="footernav" class="pull-left">
 			    <li><a href="#">Contact Us</a></li>
 			    <li class="last"><a href="#">Privacy Policy</a></li>
 		    </ul>
-            <p class="pull-right"> Contents &copy; 2015 University of Ontario Institute of Technology. All rights reserved.</p>
+            <p class="pull-right" style="font-size:11px; color:#777"> Contents &copy; 2015 University of Ontario Institute of Technology. All rights reserved.</p>
         </div>
 
 

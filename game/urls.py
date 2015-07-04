@@ -1,11 +1,11 @@
 from django.conf.urls import patterns, url
 
-from Fydlyty2.game.views import confirm_scenario, create_scenario, game, scenarios_list
+from Fydlyty2.game.views import confirm_scenario, create_scenario, debrief, game, get_dialogues, scenarios_list
 
 
 urlpatterns = patterns('',
 
-    url( r'^$',
+    url( r'^(?P<script_id>\d+)/$',
         game,
         {'template_name': 'game/game.html'},
         name = 'game' ),
@@ -24,4 +24,14 @@ urlpatterns = patterns('',
         scenarios_list,
         {'template_name': 'game/scenarios_list.html'},
         name = 'scenarios_list' ),
+
+    url( r'^$',
+        get_dialogues,
+        name = 'get_dialogues' ),
+
+    url( r'^debrief/(?P<script_id>\d+)/$',
+        debrief,
+        {'template_name': 'game/debrief.html'},
+        name = 'debrief' ),
+
 )

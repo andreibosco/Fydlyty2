@@ -26,7 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_PROFILE_MODULE = 'Fydlyty2.UserProfile'
+#AUTH_PROFILE_MODULE = 'accounts.userprofile'
 
 # Application definition
 
@@ -40,6 +40,8 @@ INSTALLED_APPS = (
 
     'Fydlyty2.accounts',
     'Fydlyty2.game',
+
+    'sorl.thumbnail',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -112,3 +114,19 @@ STATICFILES_DIRS = (
 )
 
 TEMP_SCRIPT = os.path.join(BASE_DIR, "Fydlyty2", "static", "files", "dialogue_script.csv")
+
+LANGUAGE = {
+    'Good morning': ['Good afternoon', 'Good evening', 'Good night'],
+    'Good evening': ['Good morning', 'Good afternoon', 'Good night'],
+    'Good night': ['Good morning', 'Good afternoon', 'Good evening'],
+    'Mr.': ['Miss', 'Ms.', 'Mrs.'],
+    'Mrs.': ['Miss', 'Ms.', 'Mr.'],
+    'Miss': ['Mr.', 'Ms.', 'Mrs.'],
+    'Ms.': ['Miss', 'Mrs.', 'Mr.'],
+}
+
+HELP = {
+    'N': ['Good Work! Build upon your efforts.', 'You have started to understand this game really well.', 'Bravo!'],
+    'M': ['Oh no! They didn\'t like it.', 'Don\'t repeat this mistake again.', 'They got upset. Try not to repeat this mistake again'],
+    'A': ['This is serious! You have to be careful',],
+}

@@ -1,12 +1,13 @@
-import csv
+import csv, json, random, re
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from Fydlyty2.accounts.models import UserProfile
 from Fydlyty2.game.models import Character, Dialogue, Scenario, Script
 
 
@@ -15,8 +16,31 @@ def index(request, template_name):
     return render_to_response(template_name, context_instance=RequestContext(request))
 
 @login_required
-def game(request, template_name):
-    return render_to_response(template_name, context_instance=RequestContext(request))
+def game(request, script_id, template_name):
+    """
+
+    """
+    try:
+        script = Script.objects.get(id = script_id)
+    except Script.DoesNotExist:
+        return HttpResponseRedirect(reverse('index'))
+
+    scenario = Scenario.objects.get(script = script)
+    normal_character = Character.objects.get(scenario = scenario, mood = 'N')
+    parent_dialogue = Dialogue.objects.get(script = script, parent = None, character = 'VC')
+    if parent_dialogue:
+        game_player = Dialogue.objects.filter(script = script, parent = parent_dialogue)
+    else:
+        game_player = Dialogue.objects.filter(script = script, parent = None, character = 'GP')
+
+    data = {
+        'scenario': scenario,
+        'normal_character': normal_character,
+        'script': script,
+        'parent_dialogue': parent_dialogue,
+        'game_player': game_player,
+    }
+    return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 @login_required
 def create_scenario(request, template_name):
@@ -66,9 +90,14 @@ def dialogue_script(file, script, gameplayer, virtualcharacter):
             character = string.split(',')[0]
             dialogue = string.split(',')[1]
 
-            obj = Dialogue.objects.create(parent = parent, script = script, utterance = dialogue)
+            obj = Dialogue.objects.create(parent = parent, script = script, utterance = dialogue, mood = 'N')
             if character == gameplayer:
                 obj.character = 'GP'
+                mad, angry = change_dialogue(dialogue)
+                if mad:
+                    Dialogue.objects.create(parent = parent, script = script, utterance = mad, mood = 'M')
+                if angry:
+                    Dialogue.objects.create(parent = parent, script = script, utterance = angry, mood = 'A')
             else:
                 obj.character = 'VC'
             obj.save()
@@ -94,7 +123,22 @@ def confirm_scenario(request, scenario_id, template_name):
     """
     if request.method == 'POST':
         for key, value in request.POST.iteritems():
-            print key, value
+            if key == 'csrfmiddlewaretoken':
+                continue
+            if not value:
+                continue
+            if len(key.split('_')) == 2:
+                mood_type = key.split('_')[0]
+                parent_id = key.split('_')[1]
+            try:
+                parent = Dialogue.objects.get(id = parent_id)
+            except Dialogue.DoesNotExit:
+                continue
+
+            dialogue, created = Dialogue.objects.get_or_create(script = parent.script, mood = mood_type, parent = parent, character = 'GP')
+            dialogue.utterance = value
+            dialogue.save()
+
         return HttpResponseRedirect(reverse('scenarios_list'))
 
     else:
@@ -123,7 +167,28 @@ def confirm_scenario(request, scenario_id, template_name):
         except Script.DoesNotExist:
             return HttpResponseRedirect(reverse('index'))
 
-        dialogues = Dialogue.objects.filter(script = script)
+        try:
+            parent_dialogue = Dialogue.objects.filter(script = script, parent = None)[0]
+        except Dialogue.DoesNotExist:
+            return HttpResponseRedirect(reverse('index'))
+
+        dialogues = [
+            {'N': parent_dialogue}
+        ]
+        temp_dic = {}
+        while True:
+            next = Dialogue.objects.filter(script = script, parent = parent_dialogue)
+            for obj in next:
+                temp_dic[obj.mood] = obj
+            if next:
+                dialogues.append(temp_dic)
+                temp_dic = {}
+            try:
+                parent_dialogue = next.get(mood = 'N')
+            except Dialogue.DoesNotExist:
+                parent_dialogue = None
+            if parent_dialogue == None:
+                break
 
         data = {
             'character_normal': character_normal,
@@ -140,8 +205,75 @@ def scenarios_list(request, template_name):
     """
 
     """
-    scenarios = Scenario.objects.all()
+
+    profile = UserProfile.objects.get(user = request.user)
+    scripts = Script.objects.all().order_by('-id')
     data = {
-        'basic_scenarios': scenarios,
+        'profile': profile,
+        'basic_scenarios': scripts,
     }
     return render_to_response(template_name, context_instance=RequestContext(request, data))
+
+def change_dialogue(dialogue):
+    """
+    The function takes a normal dialogue and changes it
+    into forms of mad and angry
+    """
+    mad = None
+    angry = None
+    for key in settings.LANGUAGE:
+        if key.lower() in dialogue.lower():
+            values = settings.LANGUAGE.get(key)
+            replace_with = random.choice(values)
+            insensitive_key = re.compile(re.escape(key), re.IGNORECASE)
+            if mad == None:
+                mad = insensitive_key.sub(replace_with, dialogue)
+                last_change = replace_with
+                dialogue = mad
+            elif replace_with != last_change:
+                angry = insensitive_key.sub(replace_with, dialogue)
+    return mad, angry
+
+@login_required
+def get_dialogues(request):
+    """
+    Get dialogue for Game player and Virtual Character
+    """
+    if request.is_ajax() and request.method == 'GET':
+        try:
+            dialogue = Dialogue.objects.get(id = request.GET.get('id'))
+        except Dialogue.DoesNotExist:
+            return HttpResponse(json.dumps({"status": False}))
+
+        normal_parent = Dialogue.objects.filter(parent = dialogue.parent, mood = 'N')
+
+        try:
+            vc = Dialogue.objects.get(parent = normal_parent)
+        except Dialogue.DoesNotExist:
+            return HttpResponse(json.dumps({"status": False}))
+        character = Character.objects.get(scenario = dialogue.script.scenario, mood = dialogue.mood)
+        if vc:
+            vc_dialogue = vc.utterance
+        else:
+            vc_dialogue = 'Nothing to say'
+
+        gp_dialogues = Dialogue.objects.filter(parent = vc).order_by('?')
+
+        gp_list = []
+        for gp in gp_dialogues:
+            gp_list.append({'id': gp.id, 'utterance': gp.utterance})
+
+        values = settings.HELP.get(dialogue.mood)
+        help_text = random.choice(values)
+        return HttpResponse(json.dumps({"status": True, "image": character.image.url, "vc_dialogue": vc_dialogue,
+                                        "help_text": help_text, "gp_dialogues": gp_list}))
+    return HttpResponse(json.dumps({"status": False}))
+
+@login_required
+def debrief(request, script_id, template_name):
+    """
+
+    """
+    print 'done', script_id
+    return render_to_response(template_name, context_instance=RequestContext(request))
+

@@ -84,7 +84,7 @@ Confirm the new Scenario
                 </div>
 
                 <div class="form-group">
-                    <label class="col-sm-4 control-label pt40">Mood Mad Image</label>
+                    <label class="col-sm-4 control-label pt40">Mood Upset Image</label>
                     <div class="controls mt7">
                         <img class="confirmImage mt10" id="previewM" src="{{ character_mad.image.url }}" alt="" />
                     </div>
@@ -118,7 +118,11 @@ Confirm the new Scenario
                         <label class="control-label">Context</label>
                     </div>
                     <div class="col-xs-8 controls mt7 pl0">
-                        <p class="small">{{ script.context }}</p>
+                        {% if script.context %}
+                            <p class="small">{{ script.context }}</p>
+                        {% else %}
+                            Context not given
+                        {% endif %}
                     </div>
                 </div>
 
@@ -127,7 +131,11 @@ Confirm the new Scenario
                         <label class="control-label">Scene</label>
                     </div>
                     <div class="col-xs-8 controls mt7 pl0">
-                        <p class="small">{{ script.scene }}</p>
+                        {% if script.scene %}
+                            <p class="small">{{ script.scene }}</p>
+                        {% else %}
+                            Scene not given
+                        {% endif %}
                     </div>
                 </div>
         </div>
@@ -155,25 +163,32 @@ Confirm the new Scenario
                     <tr>
                         <th>Character type</th>
                         <th>Normal</th>
-                        <th>Mad (Proposed Dialogue)</th>
+                        <th>Upset (Proposed Dialogue)</th>
                         <th>Angry (Proposed Dialogue)</th>
                     </tr>
                 </thead>
                 {% for dialogue in dialogues %}
-                    {% ifequal dialogue.character 'VC' %}
+                    {% if dialogue.N.character == 'VC' %}
                         <tr>
-                            <td>{{ dialogue.get_character_display }}</td>
-                            <td>{{ dialogue.utterance }}</td>
+                            <td>{{ dialogue.N.get_character_display }}</td>
+                            <td>{{ dialogue.N.utterance }}</td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td class="w25pc">{{ dialogue.get_character_display }}</td>
-                            <td class="success w25pc">{{ dialogue.utterance }}</td>
-                            <td class="warning w25pc"><textarea class="confirmDialogue textAreaWarning" id="m_{{ dialogue.parent.id }}" name="m_{{ dialogue.parent.id }}">{{ dialogue.utterance }}</textarea></td>
-                            <td class="danger w25pc"><textarea class="confirmDialogue textAreaDanger" id="a_{{ dialogue.parent.id }}" name="a_{{ dialogue.parent.id }}">{{ dialogue.utterance }}</textarea></td>
-
+                            <td>{{ dialogue.N.get_character_display }}</td>
+                            <td class="success col-md-4">{{ dialogue.N.utterance }}</td>
+                            {% if dialogue.M %}
+                                <td class="warning"><textarea class="confirmDialogue textAreaWarning" id="M_{{ dialogue.N.parent.id }}" name="M_{{ dialogue.N.parent.id }}">{{ dialogue.M.utterance }}</textarea></td>
+                            {% else %}
+                                <td class="warning"><textarea class="confirmDialogue textAreaWarning" id="M_{{ dialogue.N.parent.id }}" name="M_{{ dialogue.N.parent.id }}"></textarea></td>
+                            {% endif %}
+                            {% if dialogue.A %}
+                                <td class="danger"><textarea class="confirmDialogue textAreaDanger" id="A_{{ dialogue.N.parent.id }}" name="A_{{ dialogue.N.parent.id }}">{{ dialogue.A.utterance }}</textarea></td>
+                            {% else %}
+                                <td class="danger"><textarea class="confirmDialogue textAreaDanger" id="A_{{ dialogue.N.parent.id }}" name="A_{{ dialogue.N.parent.id }}"></textarea></td>
+                            {% endif %}
                         </tr>
-                    {% endifequal %}
+                    {% endif %}
                 {% endfor %}
             </table>
 

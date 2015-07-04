@@ -4,8 +4,8 @@
 
 {% block content %}
 
-<div class="row col-sm-offset-3">
-    <div class="col-sm-12">
+<div class="row ml10">
+    <div class="#">
         <h1 class="pageHeading">Login to your account</h1>
     </div>
     <div class="clearfix"></div>
@@ -17,7 +17,7 @@
             </div>
 	    {% endif %}
 
-	    <form method="POST" action="?next={{ next|default:'/' }}" class="form-horizontal">
+	    <form method="POST" action="?next={{ next|default:'/' }}" class="form-horizontal col-sm-offset-3 mt50">
 		    {% csrf_token %}
 		    <div class="form-group">
 			    <label class="col-sm-2 control-label">Username</label>

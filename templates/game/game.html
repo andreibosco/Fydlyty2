@@ -1,109 +1,210 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load thumbnail %}
 {% block title %}
+{{ scenario.title }}
+{% endblock %}
+
+{% block extra_head %}
 
 {% endblock %}
 
 {% block content %}
-<!-- Portfolio Item Heading -->
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Portfolio Item
-                    <small>Item Subheading</small>
-                </h1>
+
+    <div class="row">
+        <div id="spinner" style="padding-top:700px;"></div>
+        <div id="game" style="display: None;">
+            <div class="col-sm-12">
+                <h1 class="pageHeading">{{ scenario.title }}</h1>
+            </div>
+            <div class="clearfix"></div>
+
+            <div class="col-xs-8">
+                {% thumbnail scenario.background "800x600" crop="center" as image %}
+                    <a href="javascript:void(0)" class="img-responsive background-image" style="background-image: url('{{ image.url }}'); width: {{ image.width }}; height: {{ image.height }}">
+                        <img id="character-img" class="img-responsive foreground-image" src="{{ normal_character.image.url }}" alt="">
+                    </a>
+                {% endthumbnail %}
+            </div>
+
+            <div class="col-xs-4" id="info" style="overflow-y: scroll; max-height: 580px;">
+                <h2 style="margin-top:0px;">Patient Information</h2>
+
+                <label class="control-label">Name:</label>
+                <p class="small-text">{{ normal_character.name }}</p>
+
+                <label class="control-label">Gender:</label>
+                <p class="small-text">{{ normal_character.get_gender_display }}</p>
+
+                <label class="control-label">Marital Status:</label>
+                <p class="small-text">{{ normal_character.get_marital_status_display }}</p>
+
+                <label class="control-label">Role of Player:</label>
+                <p class="small-text">{{ scenario.role }}</p>
+
+                <label class="control-label">Context:</label>
+                <p class="small-text">{{ script.context }}</p>
+
+                <label class="control-label">Scene:</label>
+                <p class="small-text">{{ script.scene }}</p>
+            </div>
+
+            <div class="col-xs-4" id="dialogues" style="display: None;">
+                {% csrf_token %}
+                <div id="conversation">
+                    <h2 style="margin-top:0px;">Characters Console</h2>
+                    <table class="table table-striped">
+                        <tr>
+                            <td style="height: 100px;"><strong>Character: </strong>
+                                <div id="vc-dialogue">{{ parent_dialogue.utterance }}</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h2>Choose a Dialogue Script</h2>
+                    <table class="table table-hover" id="gp-dialogue">
+                        {% for dialogue in game_player %}
+                            <tr>
+                                <td class="option" id="{{ dialogue.id }}" style="height: 110px;"><a href="javascript:void(0)"><strong>Game Player: </strong></a>{{ dialogue.utterance }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="col-xs-2">
+                <div id="countdown"></div>
+            </div>
+
+            <div class="col-xs-6">
+                <table class="table table-condensed table-striped comment-box">
+                    <thead><tr><th>Comment Box</th></tr></thead>
+                    <tr><td height="95"><div id="help">I will be assisting you through out your game play.</div></td></tr>
+                </table>
+            </div>
+
+            <div class="col-xs-4" style="margin-top:40px;">
+                <button type="button" class="btn btn-lg btn-block" id="continue">Start Game</button>
             </div>
         </div>
-        <!-- /.row -->
-
-        <!-- Portfolio Item Row -->
-        <div class="row">
-		<p class="header"><span>Preview</span></p>
-		<div class="content">
-			<div id="unityPlayer" class="drsElement drsMoveHandle">
-				<div class="missing">
-					<a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
-						<img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
-					</a>
-				</div>
-			</div>
-		</div>
-        <input id="change" type="button" value="Project1">
+        <div class="progress" id="finish-screen" style="display: None; margin-top:500px;">
+            <div class="progress-bar" id="progressBar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;">
+                10%
+            </div>
         </div>
-        <!-- /.row -->
+    </div>
 
-        <hr>
 {% endblock %}
 
 {% block extra_body %}
-		<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
-		<script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
-		<script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>
-		<script type='text/javascript'>
-		<!--
-			var player = new CTWebPlayer();
-			$(document).ready( function() {
-				SetPlayerResolution( 640, 480 );
-				player.init( $("#unityPlayer")[0], {
-					playerUrl: "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?",
-					loaded: StartWebPlayer
-				} );
-			});
-			function StartWebPlayer() {
-				player.showPlaybar( false );
-				player.setLoop( false );
-				player.setVolume( 100 );
-				player.setLookat( "screen" );
-				player.setLookatStrength( "medium" );
+<script src="{% static 'js/jquery.countdown360.js' %} " type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/jquery.playSound.js' %} " type="text/javascript"></script>
+<script src="{% static 'js/spin.min.js' %} " type="text/javascript"></script>
 
-				var fadeInSec = 0;
-				var backgroundImage = "";
-				if ( backgroundImage.length ) {
-					var autoPlay = 2;
-					player.loadProject( "{% static 'crazytalk/Avatar/default.uctproject' %}", {
-						playAfter: -1,
-						showActor: false,
-						showBackground: false,
-						idleMotionUrl: "{% static 'crazytalk/Avatar/_Male.uctidle' %}",
-						loaded: function( status ) {
-							player.setBackgroundColor( { r:255,g:255,b:255 } );
-							player.loadBackground( backgroundImage, {
-								fit:"fill",
-								alpha: 0,
-								loaded: function( status ) {
-									player.showActor( true, fadeInSec );
-									player.showBackground( true );
-									if ( autoPlay >= 0 ) player.play( autoPlay );
-								}
-							});
-						}
-					});
-				} else {
-					player.loadProject( "{% static 'crazytalk/Avatar/default.uctproject' %}", {
-						playAfter: 1,
-						showActor: ( fadeInSec <= 0.0 ),
-						idleMotionUrl: "{% static 'crazytalk/Avatar/_Male.uctidle' %}",
-						loaded: function( status ) {
-							player.setBackgroundColor( { r:255,g:255,b:255 } );
-							if ( fadeInSec > 0.0 ) player.showActor( true, fadeInSec );
-						}
-					});
-				}
-			}
-			function SetPlayerResolution( width, height ) {
-				$("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
-			}
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+        var opts = {
+          lines: 13 // The number of lines to draw
+        , length: 28 // The length of each line
+        , width: 11 // The line thickness
+        , radius: 30 // The radius of the inner circle
+        , scale: 1 // Scales overall size of the spinner
+        , corners: 1 // Corner roundness (0..1)
+        , color: '#606060' // #rgb or #rrggbb or array of colors
+        , opacity: 0.25 // Opacity of the lines
+        , rotate: 0 // The rotation offset
+        , direction: -1 // 1: clockwise, -1: counterclockwise
+        , speed: 1.2 // Rounds per second
+        , trail: 60 // Afterglow percentage
+        , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+        , zIndex: 2e9 // The z-index (defaults to 2000000000)
+        , className: 'spinner' // The CSS class to assign to the spinner
+        , top: '50%' // Top position relative to parent
+        , left: '50%' // Left position relative to parent
+        , shadow: false // Whether to render a shadow
+        , hwaccel: false // Whether to use hardware acceleration
+        , position: 'absolute' // Element positioning
+        }
+        var target = document.getElementById('spinner');
+        var spinner = new Spinner(opts).spin(target);
+        setTimeout(function(){
+            spinner.stop();
+            $('#spinner').css('padding-top', 0);
+            $('#game').show();
+        }, 1000);
+	});
+</script>
 
-		-->
-		</script>
+<script type="text/javascript" charset="utf-8">
+    $("#countdown").countdown360({
+       	 radius      : 60,
+         seconds     : 300,
+         fontColor   : '#FFFFFF',
+         autostart   : false,
+         onComplete  : function () { $.playSound("{% static 'audio/alarm_alert' %}"); }
+    }).start()
+</script>
 
-<script type='text/javascript'>
-$( "#change" ).on( "click", function() {
-  player.loadProject("{% static 'crazytalk/Avatar2/Load_project1.uctproject' %}", {
-                playAfter: 0,
-                showActor: true,
-                showBackground: true,
-                idleMotionUrl: "{% static 'crazytalk/Avatar2/Female.uctidle' %}"
-                });
-});
+<script type="text/javascript">
+	$("#continue").on('click', function(event){
+        $( "#info" ).fadeOut(1000, function() {
+            $("#continue").hide();
+            $("#dialogues").fadeIn(1000, function() {
+                $(this).css("display", "inline");
+                $(this).css("opacity", 100);
+            });
+        });
+    });
+</script>
+
+<script type="text/javascript" charset="utf-8">
+    $(document).on('click', '.option', function (event){
+        var id = $(this).attr("id");
+        $.ajax({
+            type: "GET",
+            url: {% url 'get_dialogues' %},
+            data: {csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value, id: id},
+            dataType: "json",
+            success: function (response){
+                if (response['status']){
+                    $('#vc-dialogue').html(response['vc_dialogue']);
+                    $('#help').html(response['help_text']);
+                    $('#character-img').attr('src', response['image']);
+                    var s = '';
+                    for (var i = 0; i < response['gp_dialogues'].length; i++){
+                        s = s + "<tr><td class=\"option\" id=\"" + response['gp_dialogues'][i]['id'] + "\" style=\"height: 110px;\"><a href=\"javascript:void(0)\"><strong>Game Player: </strong></a>" + response['gp_dialogues'][i]['utterance'] + "</td></tr>";
+                    }
+
+                    $('#gp-dialogue').fadeOut("slow", function(){
+                        $('#gp-dialogue').html(s);
+                        $('#gp-dialogue').fadeIn("slow");
+                    });
+                }else {
+                    $('#game').fadeOut("slow", function(){
+                        $('#finish-screen').fadeIn();
+                    });
+                    setTimeout(function(){
+                        $('#progressBar').css('width', '15%');
+                        $('#progressBar').html('15%');
+                    }, 1000);
+                    setTimeout(function(){
+                        $('#progressBar').css('width', '25%');
+                        $('#progressBar').html('25%');
+                    }, 2000);
+                    setTimeout(function(){
+                        $('#progressBar').css('width', '50%');
+                        $('#progressBar').html('50%');
+                    }, 4000);
+                    setTimeout(function(){
+                        $('#progressBar').css('width', '95%');
+                        $('#progressBar').html('95%');
+                    }, 6000);
+                    setTimeout(function(){
+                        window.location.href = '/game/debrief/{{ script.id }}';
+                    }, 8000);}
+            }
+        });
+    });
 </script>
 {% endblock %}
