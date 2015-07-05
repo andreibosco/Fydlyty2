@@ -10,7 +10,14 @@ class Scenario( models.Model ):
     The scenario is one instant of the game. It will consist of
     a background, character, script, and role of player in the game
     """
+    SCENARIO_TYPE_CHOICES = (
+	    ('B', 'Basic Scenario'),
+        ('C', 'Complex Scenario'),
+    )
     title = models.CharField(max_length = 100)
+    type = models.CharField(max_length = 2,
+                                 choices = SCENARIO_TYPE_CHOICES,
+                                 default = 'B')
     background = models.ImageField(_('background image'), upload_to = "BackgroundImages/")
     role = models.CharField(max_length = 50, blank = True, null = True)
 
@@ -37,6 +44,7 @@ class Character( models.Model ):
 	    ('', ''),
         ('M', 'Male'),
         ('F', 'Female'),
+        ('N', 'I don\'t want to say'),
     )
     CHARACTER_STATUS_CHOICES = (
 	    ('N', 'I don\'t want to say'),

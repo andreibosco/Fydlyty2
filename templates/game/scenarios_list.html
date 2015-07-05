@@ -15,7 +15,7 @@ List of scenarios
             <div class="list-group-item active">
                 <h4 class="list-group-item-heading active">Basic Scenarios
                 {% ifequal profile.role 'in' %}
-                    <a href="{% url 'create_scenario' %}" class="plus" title="Create a new basic scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
+                    <a href="{% url 'create_basic_scenario' %}" class="plus" title="Create a new basic scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
                 {% endifequal %}
             </div>
 
@@ -32,5 +32,25 @@ List of scenarios
 
         </div>
 
+        <div class="list-group ml10">
+            <div class="list-group-item active">
+                <h4 class="list-group-item-heading active">Complex Scenarios
+                {% ifequal profile.role 'in' %}
+                    <a href="{% url 'create_basic_scenario' %}" class="plus" title="Create a new complex scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
+                {% endifequal %}
+            </div>
+
+            {% if complex_scenarios %}
+                {% for complex_scenario in complex_scenarios %}
+                    <a href="{% url 'game' complex_scenario.id %}" class="list-group-item">
+                        <h4 class="list-group-item-heading">{{ complex_scenario.scenario.title }}</h4>
+                        <p class="list-group-item-text">Some description for scenario</p>
+                    </a>
+                {% endfor %}
+                {% else %}
+                    <p class="small-text mt10">No scenarios added to the system.</p>
+            {% endif %}
+
+        </div>
     </div>
 {% endblock %}

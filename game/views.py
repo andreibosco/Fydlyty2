@@ -43,9 +43,9 @@ def game(request, script_id, template_name):
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 @login_required
-def create_scenario(request, template_name):
+def create_basic_scenario(request, template_name):
     """
-
+    Renders the create page for the basic scenario.
     """
     if request.method == 'POST':
         title = request.POST.get('title', '')
@@ -73,7 +73,7 @@ def create_scenario(request, template_name):
         script = Script.objects.create(scenario = scenario, context = context, scene = scene)
 
         dialogue_script(csvfile, script, gameplayer, virtualcharacter)
-        return HttpResponseRedirect(reverse('confirm_scenario', args=[scenario.id]))
+        return HttpResponseRedirect(reverse('confirm_basic_scenario', args=[scenario.id]))
     else:
         return render_to_response(template_name, context_instance=RequestContext(request))
 
@@ -116,7 +116,7 @@ def handle_uploaded_file(file):
     return True
 
 @login_required
-def confirm_scenario(request, scenario_id, template_name):
+def confirm_basic_scenario(request, scenario_id, template_name):
     """
     Renders the confirmation page with the information uploaded,
     and handles form submission for proposed dialogues
@@ -203,14 +203,15 @@ def confirm_scenario(request, scenario_id, template_name):
 @login_required
 def scenarios_list(request, template_name):
     """
-
+    Show list of basic & complex scenarios
     """
-
     profile = UserProfile.objects.get(user = request.user)
-    scripts = Script.objects.all().order_by('-id')
+    basic_scripts = Script.objects.filter(scenario__type = 'B').order_by('-id')
+    complex_scripts = Script.objects.filter(scenario__type = 'C').order_by('-id')
     data = {
         'profile': profile,
-        'basic_scenarios': scripts,
+        'basic_scenarios': basic_scripts,
+        'complex_scripts': complex_scripts,
     }
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
@@ -274,6 +275,19 @@ def debrief(request, script_id, template_name):
     """
 
     """
-    print 'done', script_id
     return render_to_response(template_name, context_instance=RequestContext(request))
 
+@login_required
+def create_complex_scenario(request, scenario_id, template_name):
+    """
+    Renders the create page for the complex scenario.
+    """
+    return 0
+
+@login_required
+def confirm_complex_scenario(request, scenario_id, template_name):
+    """
+    Renders the confirmation page with the information uploaded,
+    and handles form submission for proposed dialogues
+    """
+    return 0

@@ -48,13 +48,10 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <li>
-                        <a href="#">About</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'scenarios_list' %}">Scenarios</a>
-                    </li>
                     {% if user.is_authenticated %}
+                        <li>
+                            <a href="{% url 'scenarios_list' %}">Scenarios</a>
+                        </li>
 			            <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a>
 		            {% else %}
 			            <li><a href="{% url 'django.contrib.auth.views.login' %}">Login</a>

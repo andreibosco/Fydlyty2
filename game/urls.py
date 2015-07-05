@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-from Fydlyty2.game.views import confirm_scenario, create_scenario, debrief, game, get_dialogues, scenarios_list
+from Fydlyty2.game.views import confirm_basic_scenario, confirm_complex_scenario, create_basic_scenario, create_complex_scenario, debrief, game, get_dialogues, scenarios_list
 
 
 urlpatterns = patterns('',
@@ -10,15 +10,25 @@ urlpatterns = patterns('',
         {'template_name': 'game/game.html'},
         name = 'game' ),
 
-    url( r'^scenario/$',
-        create_scenario,
-        {'template_name': 'game/create_scenario.html'},
-        name = 'create_scenario' ),
+    url( r'^scenario/basic/$',
+        create_basic_scenario,
+        {'template_name': 'game/create_basic_scenario.html'},
+        name = 'create_basic_scenario' ),
 
-    url( r'^scenario/(?P<scenario_id>\d+)/confirm/$',
-        confirm_scenario,
-        {'template_name': 'game/confirm_scenario.html'},
-        name = 'confirm_scenario' ),
+    url( r'^scenario/complex/$',
+        create_complex_scenario,
+        {'template_name': 'game/create_complex_scenario.html'},
+        name = 'create_complex_scenario' ),
+
+    url( r'^scenario/basic/(?P<scenario_id>\d+)/confirm/$',
+        confirm_basic_scenario,
+        {'template_name': 'game/confirm_basic_scenario.html'},
+        name = 'confirm_basic_scenario' ),
+
+    url( r'^scenario/complex/(?P<scenario_id>\d+)/confirm/$',
+        confirm_complex_scenario,
+        {'template_name': 'game/confirm_complex_scenario.html'},
+        name = 'confirm_complex_scenario' ),
 
     url( r'^list/$',
         scenarios_list,
