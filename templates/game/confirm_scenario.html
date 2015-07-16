@@ -35,10 +35,14 @@ Confirm the new Scenario
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Character Name</label>
                     <div class="controls mt7">
-                        {% if character_normal.name %}
-                            {{ character_normal.name }}
+                        {% if scenario.type == 'B' %}
+                            {% if character_normal.name %}
+                                {{ character_normal.name }}
+                            {% else %}
+                                None
+                            {% endif %}
                         {% else %}
-                            None
+                            {{ name }}
                         {% endif %}
                     </div>
                 </div>
@@ -57,10 +61,14 @@ Confirm the new Scenario
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Gender</label>
                     <div class="controls mt7">
-                        {% if character_normal.gender %}
-                            {{ character_normal.get_gender_display }}
+                        {% if scenario.type == 'B' %}
+                            {% if character_normal.gender %}
+                                {{ character_normal.get_gender_display }}
+                            {% else %}
+                                None
+                            {% endif %}
                         {% else %}
-                            None
+                            {{ gender }}
                         {% endif %}
                     </div>
                 </div>
@@ -68,34 +76,59 @@ Confirm the new Scenario
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Marital Status</label>
                     <div class="controls mt7">
-                        {% if character_normal.marital_status %}
-                            {{ character_normal.get_marital_status_display }}
+                        {% if scenario.type == 'B' %}
+                            {% if character_normal.marital_status %}
+                                {{ character_normal.get_marital_status_display }}
+                            {% else %}
+                                None
+                            {% endif %}
                         {% else %}
-                            None
+                            {{ marital_status }}
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="col-sm-4 control-label pt40">Mood Normal Image *</label>
-                    <div class="controls mt7">
-                        <img class="confirmImage mt10" id="previewN" src="{{ character_normal.image.url }}" alt="" />
-                    </div>
-                </div>
+                {% if scenario.type == 'B' %}
 
-                <div class="form-group">
-                    <label class="col-sm-4 control-label pt40">Mood Upset Image</label>
-                    <div class="controls mt7">
-                        <img class="confirmImage mt10" id="previewM" src="{{ character_mad.image.url }}" alt="" />
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label pt40">Mood Normal Image *</label>
+                        <div class="controls mt7">
+                            <img class="confirmImage mt10" id="previewN" src="{{ character_normal.image.url }}" alt="" />
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="col-sm-4 control-label pt40">Mood Angry Image</label>
-                    <div class="controls mt7">
-                        <img class="confirmImage mt10" id="previewA" src="{{ character_angry.image.url }}" alt="" />
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label pt40">Mood Upset Image</label>
+                        <div class="controls mt7">
+                            <img class="confirmImage mt10" id="previewM" src="{{ character_mad.image.url }}" alt="" />
+                        </div>
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label pt40">Mood Angry Image</label>
+                        <div class="controls mt7">
+                            <img class="confirmImage mt10" id="previewA" src="{{ character_angry.image.url }}" alt="" />
+                        </div>
+                    </div>
+                {% else %}
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label pt40">Mood Normal</label>
+                        <div id="unityPlayer" class="drsElement drsMoveHandle">
+                            <div class="missing">
+                                <a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
+                                    <img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-sm-offset-5 mt10">
+                            <a href="javascript:void(0)" id="left"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></a>
+                            <a href="javascript:void(0)" id="right"><span class="glyphicon glyphicon-arrow-right ml10" aria-hidden="true"></span></a>
+                            <input type="hidden" id="mood_type" value="N">
+                        </div>
+                    </div>
+
+                {% endif %}
             </div>
 
         <div class="col-xs-6 divider-right">
@@ -199,4 +232,86 @@ Confirm the new Scenario
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block extra_body %}
+{% if scenario.type == 'C' %}
+    <script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
+    <script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>
+
+    <script type='text/javascript'>
+    var player = new CTWebPlayer();
+        $(function () {
+            player.playerUrl = "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?";
+            SetPlayerResolution( 150, 150 );
+            player.init($("#unityPlayer"), function () {
+                player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path_normal }}", {
+                    playAfter: 0,
+                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path_normal }}"
+                });
+                player.showPlaybar( false );
+                player.setVolume( 0 );
+            });
+        });
+
+        function Normal() {
+            player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path_normal }}", {
+                playAfter: 0,
+                showActor: true,
+                showBackground: false,
+                idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path_normal }}"
+            });
+        }
+
+        function Mad() {
+            player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path_mad }}", {
+                playAfter: 0,
+                showActor: true,
+                showBackground: false,
+                idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path_mad }}"
+            });
+        }
+
+        function Angry() {
+            player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path_angry }}", {
+                playAfter: 0,
+                showActor: true,
+                showBackground: false,
+                idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path_angry }}"
+            });
+        }
+
+        function SetPlayerResolution( width, height ) {
+                $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
+        }
+    </script>
+
+    <script type='text/javascript'>
+        $( "#left" ).click(function() {
+            var mood = $( "#mood_type" ).val();
+            if (mood == 'N'){}
+            else if (mood = 'M'){
+                Normal();
+                $( "#mood_type" ).val('N');
+            }
+            else if (mood = 'A'){
+                Mad();
+                $( "#mood_type" ).val('M');
+            }
+        });
+
+        $( "#right" ).click(function() {
+            var mood = $( "#mood_type" ).val();
+            if (mood == 'N'){
+                Mad();
+                $( "#mood_type" ).val('M');
+            }
+            else if (mood = 'M'){
+                Angry();
+                $( "#mood_type" ).val('A');
+            }
+            else if (mood = 'A'){}
+        });
+    </script>
+{% endif %}
 {% endblock %}

@@ -135,7 +135,7 @@ class Dialogue( models.Model ):
         verbose_name_plural = "dialogues"
 
 def get_upload_path(instance, filename):
-    return os.path.join(settings.BASE_DIR, 'Fydlyty2/media/CrazyTalkFiles', instance.scenario.title, instance.dialogue.mood, filename)
+    return os.path.join(settings.BASE_DIR, 'Fydlyty2/media/CrazyTalkFiles', instance.script.scenario.title, instance.mood, filename)
 
 
 class CTFile( models.Model ):
@@ -143,17 +143,49 @@ class CTFile( models.Model ):
     The CTFile is related to all the files from crazy talk. These files are
     represent the animated character on the screen
     """
-    dialogue = models.ForeignKey(Dialogue)
-    scenario = models.ForeignKey(Scenario)
+    CHARACTER_GENDER_CHOICES = (
+	    ('', ''),
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('N', 'I don\'t want to say'),
+    )
+    CHARACTER_STATUS_CHOICES = (
+	    ('N', 'I don\'t want to say'),
+        ('S', 'Single'),
+        ('R', 'In a relationship'),
+        ('E', 'Engaged'),
+        ('M', 'Married'),
+        ('W', 'Widowed'),
+        ('SP', 'Seperated'),
+        ('D', 'Divorced'),
+    )
+    CHARACTER_MOOD_CHOICES = (
+	    ('N', 'Normal'),
+        ('M', 'Mad'),
+        ('A', 'Angry'),
+    )
+    script = models.ForeignKey(Script)
 
-    file1 = models.FileField(blank = True, upload_to = get_upload_path)
-    file2 = models.FileField(blank = True, upload_to = get_upload_path)
-    file3 = models.FileField(blank = True, upload_to = get_upload_path)
-    file4 = models.FileField(blank = True, upload_to = get_upload_path)
-    file5 = models.FileField(blank = True, upload_to = get_upload_path)
+    name = models.CharField(max_length = 50)
+    gender = models.CharField(max_length = 2,
+                                 choices = CHARACTER_GENDER_CHOICES,
+                                 default = '')
+    marital_status = models.CharField(max_length = 2,
+                                 choices = CHARACTER_STATUS_CHOICES,
+                                 default = '')
+    mood = models.CharField(max_length = 2,
+                                 choices = CHARACTER_MOOD_CHOICES,
+                                 blank = True, null = True,
+                                 default = 'N')
+    idle = models.FileField(blank = True, upload_to = get_upload_path, max_length=500)
+    model = models.FileField(blank = True, upload_to = get_upload_path, max_length=500)
+    motion = models.FileField(blank = True, upload_to = get_upload_path, max_length=500)
+    project = models.FileField(blank = True, upload_to = get_upload_path, max_length=500)
+    ct_script = models.FileField(blank = True, upload_to = get_upload_path, max_length=500)
 
     def __unicode__(self):
-        return _("Crazy Talk files for scenario %s") % (self.scenario.title)
+        return _("Crazy Talk files for %s with mood %s") % (self.script.scenario.title, self.mood)
+
 
     class Meta:
         app_label = "game"

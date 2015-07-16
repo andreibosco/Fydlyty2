@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+Create a basic scenario
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            {% ifequal scenario_type '1' %}
+                <h1 class="pageHeading">Create a Basic Scenario</h1>
+            {% else %}
+                <h1 class="pageHeading">Create a Complex Scenario</h1>
+            {% endifequal %}
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="alert alert-danger" role="alert" style="display: none; margin-left: 15px;">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            <span class="error-text"></span>
+        </div>
+
+        <form method="POST" action="#" name="ScenarioForm" class="form-horizontal" enctype="multipart/form-data" style="margin-left:20px;">
+            {% csrf_token %}
+
+            <div class="col-xs-6">
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="title">Scenario Title *</label>
+                    <div class="controls mt7">
+                        <input type="text" id="title" name="title" placeholder="Scenario Title">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="bgimage">Background Image</label>
+                    <div class="controls mt7">
+                        <input type="file" class="uploadimage" id="bgimage" name="bgimage" placeholder="Background Image">
+                        <img class="previewImage mt10" id="previewBg" src="#" alt="" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="name">Character Name</label>
+                    <div class="controls mt7">
+                        <input type="text" id="name" name="name" placeholder="Character Name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="role">Character Role</label>
+                    <div class="controls mt7">
+                        <input type="text" id="role" name="role" placeholder="Character Role">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="gender">Gender</label>
+                    <div class="controls mt7">
+                        <select id="gender" name="gender">
+                            <option value="" disabled="disabled" selected="selected">Gender</option>
+                            <option value="N">I don't want to say</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-5 control-label" for="status">Marital Status</label>
+                    <div class="controls mt7">
+                        <select id="status" name="status">
+                            <option value="" disabled="disabled" selected="selected">Marital Status</option>
+                            <option value="N">I don't want to say</option>
+                            <option value="S">Single</option>
+                            <option value="R">In a relationship</option>
+                            <option value="E">Engaged</option>
+                            <option value="M">Married</option>
+                            <option value="W">Widowed</option>
+                            <option value="SP">Separated</option>
+                            <option value="D">Divorced</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% ifequal scenario_type '1' %}
+                    <div class="form-group">
+                        <label class="col-sm-5 control-label" for="normalimage">Mood Normal Image *</label>
+                        <div class="controls mt7">
+                            <input type="file" class="uploadimage" id="normalimage" name="normalimage" placeholder="Mood Normal Image">
+                            <img class="previewImage mt10" id="previewN" src="#" alt="" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-5 control-label" for="madimage">Mood Upset Image</label>
+                        <div class="controls mt7">
+                            <input type="file" class="uploadimage" id="madimage" name="madimage" placeholder="Mood Upset Image">
+                            <img class="previewImage mt10" id="previewM" src="#" alt="" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-5 control-label" for="angryimage">Mood Angry Image</label>
+                        <div class="controls mt7">
+                            <input type="file" class="uploadimage" id="angryimage" name="angryimage" placeholder="Mood Angry Image">
+                            <img class="previewImage mt10" id="previewA" src="#" alt="" />
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <label class="col-sm-5 ontrol-label mt7">Mood Normal CT Files *</label>
+                        <div class="controls mt7">
+                            <input type="file" class="file mb10" id="normalfile1" name="normalfile1">
+                            <input type="file" class="col-sm-5 mb10" id="normalfile2" name="normalfile2">
+                            <input type="file" class="mb10" id="normalfile3" name="normalfile3">
+                            <input type="file" class="col-sm-5 mb10" id="normalfile4" name="normalfile4">
+                            <input type="file" class="mb10" id="normalfile5" name="normalfile5">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <label class="col-sm-5 ontrol-label mt7">Mood Upset CT Files *</label>
+                        <div class="controls mt7">
+                            <input type="file" class="mb10" id="madfile1" name="madfile1">
+                            <input type="file" class="col-sm-5 mb10" id="madfile2" name="madfile2">
+                            <input type="file" class="mb10" id="madfile3" name="madfile3">
+                            <input type="file" class="col-sm-5 mb10" id="madfile4" name="madfile4">
+                            <input type="file" class="mb10" id="madfile5" name="madfile5">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <label class="col-sm-5 ontrol-label mt7">Mood Angry CT Files *</label>
+                        <div class="controls mt7">
+                            <input type="file" class="mb10" id="angryfile1" name="angryfile1">
+                            <input type="file" class="col-sm-5 mb10" id="angryfile2" name="angryfile2">
+                            <input type="file" class="mb10" id="angryfile3" name="angryfile3">
+                            <input type="file" class="col-sm-5 mb10" id="angryfile4" name="angryfile4">
+                            <input type="file" class="mb10" id="angryfile5" name="angryfile5">
+                        </div>
+                    </div>
+                {% endifequal %}
+            </div>
+
+            <div class="col-xs-6 divider-right">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label" for="gameplayer">Game Player *</label>
+                    <div class="controls mt7">
+                        <input type="text" id="gameplayer" name="gameplayer" placeholder="Game player in script">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-4 control-label" for="virtualcharacter">Virtual Character *</label>
+                    <div class="controls mt7">
+                        <input type="text" id="virtualcharacter" name="virtualcharacter" placeholder="Virtual Character in script">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-4 control-label" for="script">Dialogue Script *</label>
+                    <div class="controls mt7">
+                        <input type="file" id="script" name="script" placeholder="Dialogue Script">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-4 control-label" for="context">Context</label>
+                    <div class="controls mt7">
+                        <textarea id="context" name="context" rows="8" cols="50" placeholder="Describe the context"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-4 control-label" for="scene">Scene</label>
+                    <div class="controls mt7">
+                        <textarea id="scene" name="scene" rows="8" cols="50" placeholder="Describe the scene"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-5 col-sm-10">
+                    <button type="submit" class="btn" id="continueBtn" />Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_body %}
+<script type="text/javascript">
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            input.nextElementSibling.setAttribute('src', e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+$(".uploadimage").change(function(){
+    readURL(this);
+});
+</script>
+
+<script type="text/javascript">
+	$('#continueBtn').on('click', function(event){
+		var title = $('#title').val();
+		var gameplayer = $('#gameplayer').val();
+		var virtualcharacter = $('#virtualcharacter').val();
+		var normalimage = $('#normalimage').val();
+        var madimage = $('#madimage').val();
+        var angryimage = $('#angryimage').val();
+		var script = $('#script').val();
+
+        var normalfile1 = $('#normalfile1').val();
+        var normalfile2 = $('#normalfile2').val();
+        var normalfile3 = $('#normalfile3').val();
+        var normalfile4 = $('#normalfile4').val();
+        var normalfile5 = $('#normalfile5').val();
+
+        var madfile1 = $('#madfile1').val();
+        var madfile2 = $('#madfile2').val();
+        var madfile3 = $('#madfile3').val();
+        var madfile4 = $('#madfile4').val();
+        var madfile5 = $('#madfile5').val();
+
+        var angryfile1 = $('#angryfile1').val();
+        var angryfile2 = $('#angryfile2').val();
+        var angryfile3 = $('#angryfile3').val();
+        var angryfile4 = $('#angryfile4').val();
+        var angryfile5 = $('#angryfile5').val();
+		var flag = true;
+
+		if (!title || !gameplayer || !virtualcharacter || !script){
+		    $('.error-text').html("Required fields cannot be empty.");
+		    $('.alert').show();
+			flag = false;
+		}
+
+        else if (script.split('.')[1] != 'csv'){
+            $('.error-text').html("Only CSV type dialogue script allowed.");
+            $('.alert').show();
+			flag = false;
+		}
+
+        {% ifequal scenario_type '1' %}
+            else if (!normalimage){
+                $('.error-text').html("Required fields cannot be empty.");
+                $('.alert').show();
+                flag = false;
+            }
+            else if (normalimage.split('.')[1] != 'jpg' && normalimage.split('.')[1] != 'png'){
+                $('.error-text').html("Only JPEG and PNG type image files allowed.");
+                $('.alert').show();
+                flag = false;
+            }
+
+            else if (madimage && (madimage.split('.')[1] != 'jpg' && madimage.split('.')[1] != 'png')){
+                $('.error-text').html("Only JPEG and PNG type image files allowed.");
+                $('.alert').show();
+                flag = false;
+            }
+
+            else if (angryimage && (angryimage.split('.')[1] != 'jpg' && angryimage.split('.')[1] != 'png')){
+                $('.error-text').html("Only JPEG and PNG type image files allowed.");
+                $('.alert').show();
+                flag = false;
+            }
+        {% else %}
+            else if (!normalfile1 || !normalfile2 || !normalfile3 || !normalfile4 || !normalfile5){
+                $('.error-text').html("Required fields cannot be empty.");
+                $('.alert').show();
+                flag = false;
+		    }
+
+            if (madfile1 || madfile2 || madfile3 || madfile4 || madfile5){
+			    if (madfile1 && madfile2 && madfile3 && madfile4 && madfile5){}
+			    else{
+                    $('.error-text').html("One or more Crazy Talk files missing for Mood Upset.");
+                    $('.alert').show();
+                    flag = false;
+                }
+            }
+
+            if (angryfile1 || angryfile2 || angryfile3 || angryfile4 || angryfile5){
+			    if (angryfile1 && angryfile2 && angryfile3 && angryfile4 && angryfile5){}
+                else{
+                    $('.error-text').html("One or more Crazy Talk files missing for Mood Angry.");
+                    $('.alert').show();
+                    flag = false;
+                }
+            }
+        {% endifequal %}
+
+
+		return flag;
+	});
+</script>
+{% endblock %}

@@ -1,3 +1,4 @@
+.mb10 {margin-bottom:10px !important;}
 .ml10 {margin-left:10px !important;}
 .mt7 {margin-top:7px !important;}
 .mt10 {margin-top:10px !important;}
@@ -21,7 +22,7 @@
 .pageHeading{font-size:35px; border-bottom:1px solid #f4b800; margin-bottom:30px;}
 .subHeading{font-size:25px; margin-bottom:30px;}
 
-.previewImage{max-width: 100px; max-height: 80px; margin-left:192px;}
+.previewImage{max-width: 100px; max-height: 80px; margin-left:240px;}
 .confirmImage{max-width: 130px; max-height: 100px;}
 
 .confirmDialogue{

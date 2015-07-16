@@ -20,24 +20,26 @@
             <div class="clearfix"></div>
 
             <div class="col-xs-8">
-                {% thumbnail scenario.background "800x600" crop="center" as image %}
-                    <a href="javascript:void(0)" class="img-responsive background-image" style="background-image: url('{{ image.url }}'); width: {{ image.width }}; height: {{ image.height }}">
-                        <img id="character-img" class="img-responsive foreground-image" src="{{ normal_character.image.url }}" alt="">
-                    </a>
-                {% endthumbnail %}
+                <div id="unityPlayer" class="drsElement drsMoveHandle">
+                    <div class="missing">
+                        <a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
+                            <img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="col-xs-4" id="info" style="overflow-y: scroll; max-height: 580px;">
                 <h2 style="margin-top:0px;">Patient Information</h2>
 
                 <label class="control-label">Name:</label>
-                <p class="small-text">{{ normal_character.name }}</p>
+                <p class="small-text">{{ name }}</p>
 
                 <label class="control-label">Gender:</label>
-                <p class="small-text">{{ normal_character.get_gender_display }}</p>
+                <p class="small-text">{{ gender }}</p>
 
                 <label class="control-label">Marital Status:</label>
-                <p class="small-text">{{ normal_character.get_marital_status_display }}</p>
+                <p class="small-text">{{ marital_status }}</p>
 
                 <label class="control-label">Role of Player:</label>
                 <p class="small-text">{{ scenario.role }}</p>
@@ -88,7 +90,7 @@
                 <button type="button" class="btn btn-lg btn-block" id="continue">Start Game</button>
             </div>
         </div>
-        <div class="progress" id="finish-screen" style="display: in-line; margin-top:0px;">
+        <div class="progress col-xs-7 col-xs-offset-2" id="finish-screen" style="display: None; margin-top:250px;">
             <div class="progress-bar" id="progressBar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;">
                 10%
             </div>
@@ -101,6 +103,8 @@
 <script src="{% static 'js/jquery.countdown360.js' %} " type="text/javascript" charset="utf-8"></script>
 <script src="{% static 'js/jquery.playSound.js' %} " type="text/javascript"></script>
 <script src="{% static 'js/spin.min.js' %} " type="text/javascript"></script>
+<script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
+<script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>
 
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function(){
@@ -133,6 +137,11 @@
             $('#spinner').css('padding-top', 0);
             $('#game').show();
         }, 1000);
+
+       setTimeout(function(){
+            player.play();
+            $.playSound("/media/audio/{{ intro_file }}");
+        }, 6000);
 	});
 </script>
 
@@ -153,6 +162,8 @@
             $("#dialogues").fadeIn(1000, function() {
                 $(this).css("display", "inline");
                 $(this).css("opacity", 100);
+                player.play();
+                $.playSound("/media/audio/{{ filename }}");
             });
         });
     });
@@ -164,18 +175,31 @@
         $.ajax({
             type: "GET",
             url: {% url 'get_dialogues' %},
-            data: {csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value, id: id},
+            data: {csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value, id: id, type: '2'},
             dataType: "json",
             success: function (response){
                 if (response['status']){
                     $('#vc-dialogue').html(response['vc_dialogue']);
                     $('#help').html(response['help_text']);
-                    $('#character-img').attr('src', response['image']);
+                    //$('#character-img').attr('src', response['image']);
+                    var project_path = '{{ MEDIA_URL }}CrazyTalkFiles' + response['project_path']
+                    var idle_path = '{{ MEDIA_URL }}CrazyTalkFiles' + response['idle_path']
+                    player.loadProject(project_path, {
+                        playAfter: 0,
+                        showActor: true,
+                        showBackground: true,
+                        idleMotionUrl: "idle_path",
+                    });
+                    loadBackground(response['background_path']);
+                    setTimeout(function(){
+                        player.play();
+                        var audio_path = '{{ MEDIA_URL }}audio/' + response['filename'];
+                        $.playSound(audio_path);
+                    }, 6000);
                     var s = '';
                     for (var i = 0; i < response['gp_dialogues'].length; i++){
                         s = s + "<tr><td class=\"option\" id=\"" + response['gp_dialogues'][i]['id'] + "\" style=\"height: 110px;\"><a href=\"javascript:void(0)\"><strong>Game Player: </strong></a>" + response['gp_dialogues'][i]['utterance'] + "</td></tr>";
                     }
-
                     $('#gp-dialogue').fadeOut("slow", function(){
                         $('#gp-dialogue').html(s);
                         $('#gp-dialogue').fadeIn("slow");
@@ -206,5 +230,68 @@
             }
         });
     });
+</script>
+
+<script type='text/javascript'>
+    <!--
+        var player = new CTWebPlayer();
+        $(document).ready( function() {
+            SetPlayerResolution( 750, 580 );
+            player.init( $("#unityPlayer")[0], {
+                playerUrl: "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?",
+                loaded: StartWebPlayer
+            } );
+        });
+        function StartWebPlayer() {
+            player.showPlaybar( false );
+            player.setLoop( false );
+            player.setVolume( 0 );
+            player.setLookat( "player" );
+            player.setLookatStrength( "medium" );
+
+            var fadeInSec = 0;
+            var backgroundImage = "{{ scenario.background.url }}";
+            if ( backgroundImage.length ) {
+                var autoPlay = 1;
+                player.loadProject( "{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
+                    playAfter: 2,
+                    showActor: false,
+                    showBackground: false,
+                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path }}",
+                    loaded: function( status ) {
+                        player.setBackgroundColor( { r:255,g:255,b:255 } );
+                        player.loadBackground( backgroundImage, {
+                            fit:"fill",
+                            alpha: 0,
+                            loaded: function( status ) {
+                                player.showActor( true, fadeInSec );
+                                player.showBackground( true );
+                                if ( autoPlay >= 0 ) player.play( autoPlay );
+                            }
+                        });
+                    }
+                });
+            } else {
+                player.loadProject( "{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
+                    playAfter: 2,
+                    showActor: ( fadeInSec <= 0.0 ),
+                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path }}",
+                    loaded: function( status ) {
+                        player.setBackgroundColor( { r:255,g:255,b:255 } );
+                        if ( fadeInSec > 0.0 ) player.showActor( true, fadeInSec );
+                    }
+                });
+            }
+        }
+        function SetPlayerResolution( width, height ) {
+            $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
+        }
+
+        function loadBackground(path) {
+            player.loadBackground(path, {
+            alpha: 0.8
+        });
+    }
+    -->
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-import csv, json, random, re
+import csv, json, os, random, re, string
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -8,17 +8,22 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from Fydlyty2.accounts.models import UserProfile
-from Fydlyty2.game.models import Character, Dialogue, Scenario, Script
+from Fydlyty2.game.models import Character, CTFile, Dialogue, Scenario, Script
+
+from gtts import gTTS
 
 
 @login_required
 def index(request, template_name):
+    """
+    Render landing page for Fydlyty
+    """
     return render_to_response(template_name, context_instance=RequestContext(request))
 
 @login_required
 def game(request, script_id, template_name):
     """
-
+    Render both versions of the game (basic or complex)
     """
     try:
         script = Script.objects.get(id = script_id)
@@ -26,26 +31,69 @@ def game(request, script_id, template_name):
         return HttpResponseRedirect(reverse('index'))
 
     scenario = Scenario.objects.get(script = script)
-    normal_character = Character.objects.get(scenario = scenario, mood = 'N')
+
     parent_dialogue = Dialogue.objects.get(script = script, parent = None, character = 'VC')
     if parent_dialogue:
         game_player = Dialogue.objects.filter(script = script, parent = parent_dialogue)
     else:
         game_player = Dialogue.objects.filter(script = script, parent = None, character = 'GP')
 
-    data = {
-        'scenario': scenario,
-        'normal_character': normal_character,
-        'script': script,
-        'parent_dialogue': parent_dialogue,
-        'game_player': game_player,
-    }
+    if scenario.type == 'B':
+        normal_character = Character.objects.get(scenario = scenario, mood = 'N')
+    else:
+        try:
+            crazytalk = CTFile.objects.get(script = script, mood = 'N')
+        except CTFile.DoesNotExist:
+            return HttpResponseRedirect(reverse('index'))
+
+        project_path = "/" + crazytalk.script.scenario.title + "/" + crazytalk.mood + "/" + crazytalk.project.file.name.split("\\")[-1]
+        idle_path = "/" + crazytalk.script.scenario.title + "/" + crazytalk.mood + "/" + crazytalk.idle.file.name.split("\\")[-1]
+        vc_name = crazytalk.name
+        vc_status = crazytalk.get_marital_status_display()
+        vc_gender = crazytalk.get_gender_display()
+
+        phrase = 'Hello game player! My name is ' + crazytalk.name + ' and I am the virtual character you will be playing fidelity with. You can read more about me in the right hand column. When ready press start game to proceed.'
+        intro = gTTS(text=phrase, lang='en')
+        intro_file = randomword(15)
+        path_of_introfile = "Fydlyty2/media/audio/" + intro_file + ".mp3"
+        intro.save(path_of_introfile)
+
+        tts = gTTS(text=parent_dialogue.utterance, lang='en')
+        filename = randomword(15)
+        path_of_file = "Fydlyty2/media/audio/" + filename + ".mp3"
+        tts.save(path_of_file)
+
+        template_name = 'game/complex_game.html'
+
+        data = {
+            'scenario': scenario,
+            'script': script,
+            'parent_dialogue': parent_dialogue,
+            'game_player': game_player,
+            'project_path': project_path,
+            'idle_path': idle_path,
+            'filename': filename,
+            'intro_file': intro_file,
+            'name': vc_name,
+            'gender': vc_gender,
+            'marital_status': vc_status,
+        }
+
+    if scenario.type == 'B':
+        data = {
+            'scenario': scenario,
+            'normal_character': normal_character,
+            'script': script,
+            'parent_dialogue': parent_dialogue,
+            'game_player': game_player,
+        }
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 @login_required
-def create_basic_scenario(request, template_name):
+def create_scenario(request, scenario_type, template_name):
     """
-    Renders the create page for the basic scenario.
+    Renders the create page for the scenario & handles
+    POST requests.
     """
     if request.method == 'POST':
         title = request.POST.get('title', '')
@@ -54,28 +102,64 @@ def create_basic_scenario(request, template_name):
         role = request.POST.get('role', '')
         gender = request.POST.get('gender', '')
         status = request.POST.get('status', '')
-        normalimage = request.FILES.get('normalimage', '')
-        madimage = request.FILES.get('madimage', '')
-        angryimage = request.FILES.get('angryimage', '')
         context = request.POST.get('context', '')
         scene = request.POST.get('scene', '')
         gameplayer = request.POST.get('gameplayer', '')
         virtualcharacter = request.POST.get('virtualcharacter', '')
         csvfile = handle_uploaded_file(request.FILES.get('script', ''))
 
-        scenario = Scenario.objects.create(title = title, background = bgimage, role = role)
-        Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
-                                 image = normalimage, mood = 'N')
-        Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
-                                 image = madimage, mood = 'M')
-        Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
-                                 image = angryimage, mood = 'A')
+        if scenario_type == '1':
+            scenario = Scenario.objects.create(title = title, background = bgimage, role = role, type= 'B')
+        else:
+            scenario = Scenario.objects.create(title = title, background = bgimage, role = role, type= 'C')
         script = Script.objects.create(scenario = scenario, context = context, scene = scene)
-
         dialogue_script(csvfile, script, gameplayer, virtualcharacter)
-        return HttpResponseRedirect(reverse('confirm_basic_scenario', args=[scenario.id]))
+
+        if scenario_type == '1':
+            normalimage = request.FILES.get('normalimage', '')
+            madimage = request.FILES.get('madimage', '')
+            angryimage = request.FILES.get('angryimage', '')
+            Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
+                                     image = normalimage, mood = 'N')
+            Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
+                                     image = madimage, mood = 'M')
+            Character.objects.create(scenario = scenario, name = name, gender = gender, marital_status = status,
+                                     image = angryimage, mood = 'A')
+            return HttpResponseRedirect(reverse('confirm_scenario', args=[scenario.id]))
+        else:
+            normalfile1 = request.FILES.get('normalfile1', '')
+            normalfile2 = request.FILES.get('normalfile2', '')
+            normalfile3 = request.FILES.get('normalfile3', '')
+            normalfile4 = request.FILES.get('normalfile4', '')
+            normalfile5 = request.FILES.get('normalfile5', '')
+            ct_idle, ct_model, ct_motion, ct_project, ct_script = sort_files([normalfile1, normalfile2, normalfile3, normalfile4, normalfile5])
+            CTFile.objects.create(script = script, name = name, gender = gender, marital_status = status, mood = 'N', idle = ct_idle, model = ct_model, motion = ct_motion, project = ct_project, ct_script = ct_script)
+
+            madfile1 = request.FILES.get('madfile1', '')
+            madfile2 = request.FILES.get('madfile2', '')
+            madfile3 = request.FILES.get('madfile3', '')
+            madfile4 = request.FILES.get('madfile4', '')
+            madfile5 = request.FILES.get('madfile5', '')
+
+            if madfile1 and madfile2 and madfile3 and madfile4 and madfile5:
+                ct_idle, ct_model, ct_motion, ct_project, ct_script = sort_files([madfile1, madfile2, madfile3, madfile4, madfile5])
+                CTFile.objects.create(script = script, name = name, gender = gender, marital_status = status,
+                                        mood = 'M', idle = ct_idle, model = ct_model, motion = ct_motion,
+                                        project = ct_project, ct_script = ct_script)
+
+            angryfile1 = request.FILES.get('angryfile1', '')
+            angryfile2 = request.FILES.get('angryfile2', '')
+            angryfile3 = request.FILES.get('angryfile3', '')
+            angryfile4 = request.FILES.get('angryfile4', '')
+            angryfile5 = request.FILES.get('angryfile5', '')
+            if angryfile1 and angryfile2 and angryfile3 and angryfile4 and angryfile5:
+                ct_idle, ct_model, ct_motion, ct_project, ct_script = sort_files([angryfile1, angryfile2, angryfile3, angryfile4, angryfile5])
+                CTFile.objects.create(script = script, name = name, gender = gender, marital_status = status,
+                                        mood = 'A', idle = ct_idle, model = ct_model, motion = ct_motion,
+                                        project = ct_project, ct_script = ct_script)
+            return HttpResponseRedirect(reverse('confirm_scenario', args=[scenario.id]))
     else:
-        return render_to_response(template_name, context_instance=RequestContext(request))
+        return render_to_response(template_name, context_instance=RequestContext(request, {'scenario_type': scenario_type}))
 
 def dialogue_script(file, script, gameplayer, virtualcharacter):
     """
@@ -116,7 +200,7 @@ def handle_uploaded_file(file):
     return True
 
 @login_required
-def confirm_basic_scenario(request, scenario_id, template_name):
+def confirm_scenario(request, scenario_id, template_name):
     """
     Renders the confirmation page with the information uploaded,
     and handles form submission for proposed dialogues
@@ -148,24 +232,50 @@ def confirm_basic_scenario(request, scenario_id, template_name):
             return HttpResponseRedirect(reverse('index'))
 
         try:
-            character_normal = Character.objects.get(scenario = scenario, mood = 'N')
-        except Character.DoesNotExist:
-            return HttpResponseRedirect(reverse('index'))
-
-        try:
-            character_mad = Character.objects.get(scenario = scenario, mood = 'M')
-        except Character.DoesNotExist:
-            character_mad = None
-
-        try:
-            character_angry = Character.objects.get(scenario = scenario, mood = 'A')
-        except Character.DoesNotExist:
-            character_angry = None
-
-        try:
             script = Script.objects.get(scenario = scenario)
         except Script.DoesNotExist:
             return HttpResponseRedirect(reverse('index'))
+
+        if scenario.type == 'b':
+            try:
+                character_normal = Character.objects.get(scenario = scenario, mood = 'N')
+            except Character.DoesNotExist:
+                return HttpResponseRedirect(reverse('index'))
+
+            try:
+                character_mad = Character.objects.get(scenario = scenario, mood = 'M')
+            except Character.DoesNotExist:
+                character_mad = None
+
+            try:
+                character_angry = Character.objects.get(scenario = scenario, mood = 'A')
+            except Character.DoesNotExist:
+                character_angry = None
+
+        else:
+            try:
+                crazytalk_normal = CTFile.objects.get(script = script, mood = 'N')
+            except CTFile.DoesNotExist:
+                return HttpResponseRedirect(reverse('index'))
+            project_path_normal = "/" + crazytalk_normal.script.scenario.title + "/" + crazytalk_normal.mood + "/" + crazytalk_normal.project.file.name.split("\\")[-1]
+            idle_path_normal = "/" + crazytalk_normal.script.scenario.title + "/" + crazytalk_normal.mood + "/" + crazytalk_normal.idle.file.name.split("\\")[-1]
+            name = crazytalk_normal.name
+            gender = crazytalk_normal.get_gender_display()
+            marital_status = crazytalk_normal.get_marital_status_display()
+
+            try:
+                crazytalk_mad = CTFile.objects.get(script = script, mood = 'M')
+            except CTFile.DoesNotExist:
+                return HttpResponseRedirect(reverse('index'))
+            project_path_mad = "/" + crazytalk_mad.script.scenario.title + "/" + crazytalk_mad.mood + "/" + crazytalk_mad.project.file.name.split("\\")[-1]
+            idle_path_mad = "/" + crazytalk_mad.script.scenario.title + "/" + crazytalk_mad.mood + "/" + crazytalk_mad.idle.file.name.split("\\")[-1]
+
+            try:
+                crazytalk_angry = CTFile.objects.get(script = script, mood = 'A')
+            except CTFile.DoesNotExist:
+                return HttpResponseRedirect(reverse('index'))
+            project_path_angry = "/" + crazytalk_angry.script.scenario.title + "/" + crazytalk_angry.mood + "/" + crazytalk_angry.project.file.name.split("\\")[-1]
+            idle_path_angry = "/" + crazytalk_angry.script.scenario.title + "/" + crazytalk_angry.mood + "/" + crazytalk_angry.idle.file.name.split("\\")[-1]
 
         try:
             parent_dialogue = Dialogue.objects.filter(script = script, parent = None)[0]
@@ -190,14 +300,30 @@ def confirm_basic_scenario(request, scenario_id, template_name):
             if parent_dialogue == None:
                 break
 
-        data = {
-            'character_normal': character_normal,
-            'character_mad': character_mad,
-            'character_angry': character_angry,
-            'dialogues': dialogues,
-            'scenario': scenario,
-            'script': script,
-        }
+        if scenario.type == 'b':
+            data = {
+                'character_normal': character_normal,
+                'character_mad': character_mad,
+                'character_angry': character_angry,
+                'dialogues': dialogues,
+                'scenario': scenario,
+                'script': script,
+            }
+        else:
+            data = {
+                'name': name,
+                'gender': gender,
+                'marital_status': marital_status,
+                'project_path_normal': project_path_normal,
+                'idle_path_normal': idle_path_normal,
+                'project_path_mad': project_path_mad,
+                'idle_path_mad': idle_path_mad,
+                'project_path_angry': project_path_angry,
+                'idle_path_angry': idle_path_angry,
+                'dialogues': dialogues,
+                'scenario': scenario,
+                'script': script,
+            }
         return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 @login_required
@@ -208,10 +334,11 @@ def scenarios_list(request, template_name):
     profile = UserProfile.objects.get(user = request.user)
     basic_scripts = Script.objects.filter(scenario__type = 'B').order_by('-id')
     complex_scripts = Script.objects.filter(scenario__type = 'C').order_by('-id')
+
     data = {
         'profile': profile,
         'basic_scenarios': basic_scripts,
-        'complex_scripts': complex_scripts,
+        'complex_scenarios': complex_scripts,
     }
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
@@ -252,11 +379,24 @@ def get_dialogues(request):
             vc = Dialogue.objects.get(parent = normal_parent)
         except Dialogue.DoesNotExist:
             return HttpResponse(json.dumps({"status": False}))
-        character = Character.objects.get(scenario = dialogue.script.scenario, mood = dialogue.mood)
+
         if vc:
             vc_dialogue = vc.utterance
         else:
             vc_dialogue = 'Nothing to say'
+
+        if request.GET.get('type') == '1':
+            character = Character.objects.get(scenario = dialogue.script.scenario, mood = dialogue.mood)
+        else:
+            crazytalk = CTFile.objects.get(script = dialogue.script, mood = dialogue.mood)
+            project_path = "/" + crazytalk.script.scenario.title + "/" + crazytalk.mood + "/" + crazytalk.project.file.name.split("\\")[-1]
+            idle_path = "/" + crazytalk.script.scenario.title + "/" + crazytalk.mood + "/" + crazytalk.idle.file.name.split("\\")[-1]
+            background_path = crazytalk.script.scenario.background.url
+
+            tts = gTTS(text=vc_dialogue, lang='zh')
+            filename = randomword(15)
+            path_of_file = "Fydlyty2/media/audio/" + filename + ".mp3"
+            tts.save(path_of_file)
 
         gp_dialogues = Dialogue.objects.filter(parent = vc).order_by('?')
 
@@ -266,8 +406,15 @@ def get_dialogues(request):
 
         values = settings.HELP.get(dialogue.mood)
         help_text = random.choice(values)
-        return HttpResponse(json.dumps({"status": True, "image": character.image.url, "vc_dialogue": vc_dialogue,
-                                        "help_text": help_text, "gp_dialogues": gp_list}))
+
+        if request.GET.get('type') == '1':
+            data = {"status": True, "vc_dialogue": vc_dialogue, "help_text": help_text,
+                    "gp_dialogues": gp_list, "image": character.image.url}
+        else:
+            data = {"status": True, "vc_dialogue": vc_dialogue, "help_text": help_text,
+                    "gp_dialogues": gp_list, "project_path": project_path,
+                    "idle_path": idle_path, "filename": filename, "background_path": background_path,}
+        return HttpResponse(json.dumps(data))
     return HttpResponse(json.dumps({"status": False}))
 
 @login_required
@@ -277,17 +424,29 @@ def debrief(request, script_id, template_name):
     """
     return render_to_response(template_name, context_instance=RequestContext(request))
 
-@login_required
-def create_complex_scenario(request, scenario_id, template_name):
-    """
-    Renders the create page for the complex scenario.
-    """
-    return 0
+def randomword(length):
+    return ''.join(random.choice(string.lowercase) for i in range(length))
 
-@login_required
-def confirm_complex_scenario(request, scenario_id, template_name):
+def sort_files(files):
     """
-    Renders the confirmation page with the information uploaded,
-    and handles form submission for proposed dialogues
+    Sort files into crazy talk categories;
+    idle, model, motion, project, and script
     """
-    return 0
+    ct_idle = ''
+    ct_model = ''
+    ct_motion = ''
+    ct_project = ''
+    ct_script = ''
+    for file in files:
+        file_type = file.name.split('.')[1]
+        if file_type == 'uctidle':
+            ct_idle = file
+        elif file_type == 'uctmodel':
+            ct_model = file
+        elif file_type == 'uctmotion':
+            ct_motion = file
+        elif file_type == 'uctproject':
+            ct_project = file
+        elif file_type == 'uctscript':
+            ct_script = file
+    return ct_idle, ct_model, ct_motion, ct_project, ct_script
