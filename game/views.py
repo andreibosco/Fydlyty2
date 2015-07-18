@@ -236,7 +236,7 @@ def confirm_scenario(request, scenario_id, template_name):
         except Script.DoesNotExist:
             return HttpResponseRedirect(reverse('index'))
 
-        if scenario.type == 'b':
+        if scenario.type == 'B':
             try:
                 character_normal = Character.objects.get(scenario = scenario, mood = 'N')
             except Character.DoesNotExist:
@@ -300,7 +300,7 @@ def confirm_scenario(request, scenario_id, template_name):
             if parent_dialogue == None:
                 break
 
-        if scenario.type == 'b':
+        if scenario.type == 'B':
             data = {
                 'character_normal': character_normal,
                 'character_mad': character_mad,

@@ -63,7 +63,7 @@
                         </tr>
                     </table>
 
-                    <h2>Choose a Dialogue Script</h2>
+                    <h2>Choose a Dialogue</h2>
                     <table class="table table-hover" id="gp-dialogue">
                         {% for dialogue in game_player %}
                             <tr>
@@ -181,7 +181,7 @@
                 if (response['status']){
                     $('#vc-dialogue').html(response['vc_dialogue']);
                     $('#help').html(response['help_text']);
-                    //$('#character-img').attr('src', response['image']);
+
                     var project_path = '{{ MEDIA_URL }}CrazyTalkFiles' + response['project_path']
                     var idle_path = '{{ MEDIA_URL }}CrazyTalkFiles' + response['idle_path']
                     player.loadProject(project_path, {
@@ -190,7 +190,9 @@
                         showBackground: true,
                         idleMotionUrl: "idle_path",
                     });
-                    loadBackground(response['background_path']);
+                    player.loadBackground(response["background_path"], {
+                        alpha: 0.8
+                    });
                     setTimeout(function(){
                         player.play();
                         var audio_path = '{{ MEDIA_URL }}audio/' + response['filename'];
@@ -233,65 +235,25 @@
 </script>
 
 <script type='text/javascript'>
-    <!--
-        var player = new CTWebPlayer();
-        $(document).ready( function() {
+    var player = new CTWebPlayer();
+        $(function () {
+            player.playerUrl = "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?";
             SetPlayerResolution( 750, 580 );
-            player.init( $("#unityPlayer")[0], {
-                playerUrl: "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?",
-                loaded: StartWebPlayer
-            } );
-        });
-        function StartWebPlayer() {
-            player.showPlaybar( false );
-            player.setLoop( false );
-            player.setVolume( 0 );
-            player.setLookat( "player" );
-            player.setLookatStrength( "medium" );
-
-            var fadeInSec = 0;
-            var backgroundImage = "{{ scenario.background.url }}";
-            if ( backgroundImage.length ) {
-                var autoPlay = 1;
-                player.loadProject( "{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
-                    playAfter: 2,
-                    showActor: false,
-                    showBackground: false,
-                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path }}",
-                    loaded: function( status ) {
-                        player.setBackgroundColor( { r:255,g:255,b:255 } );
-                        player.loadBackground( backgroundImage, {
-                            fit:"fill",
-                            alpha: 0,
-                            loaded: function( status ) {
-                                player.showActor( true, fadeInSec );
-                                player.showBackground( true );
-                                if ( autoPlay >= 0 ) player.play( autoPlay );
-                            }
-                        });
-                    }
+            player.init($("#unityPlayer"), function () {
+                player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
+                    playAfter: 0,
+                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path }}"
                 });
-            } else {
-                player.loadProject( "{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
-                    playAfter: 2,
-                    showActor: ( fadeInSec <= 0.0 ),
-                    idleMotionUrl: "{{ MEDIA_URL }}CrazyTalkFiles{{ idle_path }}",
-                    loaded: function( status ) {
-                        player.setBackgroundColor( { r:255,g:255,b:255 } );
-                        if ( fadeInSec > 0.0 ) player.showActor( true, fadeInSec );
-                    }
+                player.showPlaybar( false );
+                player.setVolume( 0 );
+                player.loadBackground("{{ scenario.background.url }}", {
+                    alpha: 0.8
                 });
-            }
-        }
-        function SetPlayerResolution( width, height ) {
-            $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
-        }
-
-        function loadBackground(path) {
-            player.loadBackground(path, {
-            alpha: 0.8
+            });
         });
+
+    function SetPlayerResolution( width, height ) {
+        $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
     }
-    -->
 </script>
 {% endblock %}
