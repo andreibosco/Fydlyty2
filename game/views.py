@@ -40,6 +40,14 @@ def game(request, script_id, template_name):
 
     if scenario.type == 'B':
         normal_character = Character.objects.get(scenario = scenario, mood = 'N')
+
+        data = {
+            'scenario': scenario,
+            'normal_character': normal_character,
+            'script': script,
+            'parent_dialogue': parent_dialogue,
+            'game_player': game_player,
+        }
     else:
         try:
             crazytalk = CTFile.objects.get(script = script, mood = 'N')
@@ -78,15 +86,9 @@ def game(request, script_id, template_name):
             'gender': vc_gender,
             'marital_status': vc_status,
         }
-
-    if scenario.type == 'B':
-        data = {
-            'scenario': scenario,
-            'normal_character': normal_character,
-            'script': script,
-            'parent_dialogue': parent_dialogue,
-            'game_player': game_player,
-        }
+    write_scenario(scenario = scenario, script = script, user = request.user,
+                    parent_dialogue = parent_dialogue, game_player = game_player,
+                    scenario_type = scenario.get_type_display(), type = 'N')
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 @login_required
@@ -378,6 +380,7 @@ def get_dialogues(request):
         try:
             vc = Dialogue.objects.get(parent = normal_parent)
         except Dialogue.DoesNotExist:
+            write_scenario(user = request.user, scenario = dialogue.script.scenario, choice = dialogue, type = 'L', time_lapse = request.GET.get('time_lapse'))
             return HttpResponse(json.dumps({"status": False}))
 
         if vc:
@@ -393,7 +396,7 @@ def get_dialogues(request):
             idle_path = "/" + crazytalk.script.scenario.title + "/" + crazytalk.mood + "/" + crazytalk.idle.file.name.split("\\")[-1]
             background_path = crazytalk.script.scenario.background.url
 
-            tts = gTTS(text=vc_dialogue, lang='zh')
+            tts = gTTS(text=vc_dialogue, lang='en')
             filename = randomword(15)
             path_of_file = "Fydlyty2/media/audio/" + filename + ".mp3"
             tts.save(path_of_file)
@@ -414,15 +417,82 @@ def get_dialogues(request):
             data = {"status": True, "vc_dialogue": vc_dialogue, "help_text": help_text,
                     "gp_dialogues": gp_list, "project_path": project_path,
                     "idle_path": idle_path, "filename": filename, "background_path": background_path,}
+        write_scenario(user = request.user, scenario = dialogue.script.scenario,
+                           parent_dialogue = vc, game_player = gp_dialogues, choice = dialogue, type = 'E', time_lapse = request.GET.get('time_lapse'))
         return HttpResponse(json.dumps(data))
     return HttpResponse(json.dumps({"status": False}))
 
 @login_required
 def debrief(request, script_id, template_name):
     """
-
+    Read data from the debrif file and render on screen
     """
-    return render_to_response(template_name, context_instance=RequestContext(request))
+    try:
+        script = Script.objects.get(id = script_id)
+    except Script.DoesNotExist:
+        return HttpResponseRedirect(reverse('index'))
+
+    scenario = Scenario.objects.get(script = script)
+
+    filename = "Fydlyty2/media/scenarios/" + str(request.user) + '_' + str(scenario) + '.txt'
+    if not os.path.isfile(filename):
+        return HttpResponseRedirect(reverse('index'))
+    with open(filename, 'r') as txtfile:
+        attempt = txtfile.readlines()
+    i = 0
+    convo_list = []
+    while True:
+        if attempt[i].split(':')[0] == 'Scenario':
+            scenario = attempt[i].split(':')[1]
+            i+=1
+        elif attempt[i].split(':')[0] == 'Script':
+            script = attempt[i].split(':')[1]
+            i+=1
+        elif attempt[i].split(':')[0] == 'Game Type':
+            game_type = attempt[i].split(':')[1]
+            i+=1
+        elif attempt[i].split(':')[0] == 'User':
+            user = attempt[i].split(':')[1]
+            i+=1
+        elif attempt[i][0] == '-':
+            try:
+                attempt[i+1]
+            except:
+                break
+            j = i + 1
+            item = {}
+            gp_list = []
+            while True:
+                if attempt[j][0] == '-':
+                    item['GP'] = gp_list
+                    convo_list.append(item)
+                    i = j
+                    break
+                elif attempt[j].split(':')[0] == 'Time Lapse':
+                    item['Time'] = attempt[j].split(':')[1]
+                    j+=1
+                elif attempt[j].split(':')[0] == 'VC':
+                    item['VC'] = attempt[j].split(':')[1]
+                    j+=1
+                elif attempt[j].split(':')[0] == 'GP':
+                    gp_list.append(attempt[j].split(':')[1])
+                    j+=1
+                elif attempt[j].split(':')[0] == 'Selection':
+                    item['Selection'] = attempt[j].split(':')[1]
+                    j+=1
+                elif attempt[j].split(':')[0] == 'Character Mood':
+                    item['CharacterMood'] = attempt[j].split(':')[1].strip()
+                    j+=1
+        else:
+            i+=1
+    data = {
+        'scenario': scenario,
+        'script': script,
+        'game_type': game_type,
+        'user': user,
+        'convo_list': convo_list,
+    }
+    return render_to_response(template_name, context_instance=RequestContext(request, data))
 
 def randomword(length):
     return ''.join(random.choice(string.lowercase) for i in range(length))
@@ -450,3 +520,42 @@ def sort_files(files):
         elif file_type == 'uctscript':
             ct_script = file
     return ct_idle, ct_model, ct_motion, ct_project, ct_script
+
+def write_scenario(scenario = None, script = None, user = None,
+                    parent_dialogue = None, game_player = None,
+                    choice = None, scenario_type = 'B', type = 'N', time_lapse = 0):
+
+    filename = "Fydlyty2/media/scenarios/" + str(user) + '_' + str(scenario) + '.txt'
+    with open(filename, 'a') as txtfile:
+        if type == 'N':
+            txtfile.write('Scenario: ')
+            txtfile.write(str(scenario) + '     \n')
+            txtfile.write('Script: ')
+            txtfile.write(str(script) + '   \n')
+            txtfile.write('Game Type: ')
+            txtfile.write(str(scenario_type) + '    \n')
+            txtfile.write('User: ')
+            txtfile.write(str(user) + '     \n' + '------------------------------------------------------------------------------------------------------------------------------------------------------------------- \n')
+
+            txtfile.write('Time Lapse: ')
+            txtfile.write(str(time_lapse) + '    \n')
+            txtfile.write(str(parent_dialogue) + '\n')
+            for gp in game_player:
+                txtfile.write(str(gp) + '\n')
+        elif type == 'E':
+            txtfile.write('Selection: ')
+            txtfile.write(str(choice.utterance) + '\n')
+            txtfile.write('Character Mood: ')
+            txtfile.write(str(choice.get_mood_display()) + '\n' + '------------------------------------------------------------------------------------------------------------------------------------------------------------------- \n')
+
+            txtfile.write('Time Lapse: ')
+            txtfile.write(str(time_lapse) + '    \n')
+            txtfile.write(str(parent_dialogue) + '\n')
+            for gp in game_player:
+                txtfile.write(str(gp) + '\n')
+        elif type == 'L':
+            txtfile.write('Selection: ')
+            txtfile.write(str(choice.utterance) + '\n')
+            txtfile.write('Character Mood: ')
+            txtfile.write(str(choice.get_mood_display()) + '\n' + '------------------------------------------------------------------------------------------------------------------------------------------------------------------- \n')
+    return True

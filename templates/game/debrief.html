@@ -11,5 +11,93 @@ Debriefing
             <h1 class="pageHeading">{{ scenario.title }} Debrief</h1>
         </div>
         <div class="clearfix"></div>
+
+        <div class="col-xs-12">
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Scenario</label>
+                <div class="controls">
+                    {{ scenario }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Script</label>
+                <div class="controls">
+                    {{ script }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Game Type</label>
+                <div class="controls">
+                    {{ game_type }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Game Time</label>
+                <div class="controls">
+                    {% with convo_list|last as last %}
+                        {{ last.Time }}
+                    {% endwith %} Seconds
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">User</label>
+                <div class="controls">
+                    {{ user }}
+                </div>
+            </div>
+
+            <hr>
+
+            {% for convo in convo_list %}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Virtual Character</label>
+                    <div class="controls">
+                        {{ convo.VC }}
+                    </div>
+                </div>
+
+                {% for gp in convo.GP %}
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Game Player</label>
+                        <div class="controls">
+                            {{ gp }}
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Response</label>
+                    <div class="controls">
+                        {{ convo.Selection }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Character Mood</label>
+                    {% if convo.CharacterMood == 'Normal' %}
+                        <div class="controls">
+                            <span class="label label-success">{{ convo.CharacterMood }}</span>
+                        </div>
+                    {% endif %}
+                    {% if convo.CharacterMood == "Mad" %}
+                        <div class="controls">
+                            <span class="label label-warning">{{ convo.CharacterMood }}</span>
+                        </div>
+                    {% endif %}
+                    {% if convo.CharacterMood == 'Angry' %}
+                        <div class="controls">
+                            <span class="label label-danger">{{ convo.CharacterMood }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <hr>
+            {% endfor %}
+
+        </div>
     </div>
 {% endblock %}

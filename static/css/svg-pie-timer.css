@@ -1,0 +1,10 @@
+svg {
+  display: block;
+  margin: 50px auto;
+}
+
+#loader 
+{ fill: #8ac575 }
+
+#border
+{ fill: #477050 }

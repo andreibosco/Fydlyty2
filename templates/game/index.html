@@ -89,7 +89,13 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <img class="img-responsive" src="{% static 'img/profile.png' %}" alt="">
+                    <div id="unityPlayer" class="drsElement drsMoveHandle" style="margin-left:440px;">
+                        <div class="missing" style="margin-right:430px">
+                            <a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
+                                <img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
+                            </a>
+                        </div>
+                    </div>
                     <div class="intro-text">
                         <span class="name">Fydlyty</span>
                         <hr class="star-light">
@@ -111,7 +117,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-4 portfolio-item">
-                    <a href="#portfolioModal1" class="portfolio-link" data-toggle="modal">
+                    <a href="javascript:void(0)" class="portfolio-link" data-toggle="modal">
                         <div class="caption">
                             <div class="caption-content">
                                 <i class="fa fa-search-plus fa-3x"></i>
@@ -121,23 +127,23 @@
                     </a>
                 </div>
                 <div class="col-sm-4 portfolio-item">
-                    <a href="#portfolioModal2" class="portfolio-link" data-toggle="modal">
-                        <div class="caption">
-                            <div class="caption-content">
-                                <i class="fa fa-search-plus fa-3x"></i>
-                            </div>
-                        </div>
-                        <img src="{% static 'img/portfolio/circus.png' %}" class="img-responsive" alt="">
-                    </a>
-                </div>
-                <div class="col-sm-4 portfolio-item">
-                    <a href="#portfolioModal3" class="portfolio-link" data-toggle="modal">
+                    <a href="javascript:void(0)" class="portfolio-link" data-toggle="modal">
                         <div class="caption">
                             <div class="caption-content">
                                 <i class="fa fa-search-plus fa-3x"></i>
                             </div>
                         </div>
                         <img src="{% static 'img/portfolio/normal_patient.png' %}" class="img-responsive" alt="">
+                    </a>
+                </div>
+                <div class="col-sm-4 portfolio-item">
+                    <a href="javascript:void(0)" class="portfolio-link" data-toggle="modal">
+                        <div class="caption">
+                            <div class="caption-content">
+                                <i class="fa fa-search-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img src="{% static 'img/portfolio/complex_patient.png' %}" class="img-responsive" alt="">
                     </a>
                 </div>
             </div>
@@ -232,6 +238,30 @@
 
     <!-- Custom Theme JavaScript -->
     <script src="{% static 'js/freelancer.js' %}"></script>
+
+    <!-- Crazy Talk JavaScript -->
+    <script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
+    <script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>
+
+    <script type='text/javascript'>
+    var player = new CTWebPlayer();
+        $(function () {
+            player.playerUrl = "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?";
+            SetPlayerResolution( 256, 256 );
+            player.init($("#unityPlayer"), function () {
+                player.loadProject("{% static 'crazy-talk/index/default.uctproject' %}", {
+                    playAfter: 0,
+                    idleMotionUrl: "{% static 'crazy-talk/index/idle.uctidle' %}"
+                });
+                player.showPlaybar( false );
+                player.setVolume( 0 );
+            });
+        });
+
+    function SetPlayerResolution( width, height ) {
+        $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
+    }
+</script>
 
 </body>
 

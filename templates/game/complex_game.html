@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block extra_head %}
-
+    <link href="{% static 'css/svg-pie-timer.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -76,7 +76,11 @@
             <div class="clearfix"></div>
 
             <div class="col-xs-2">
-                <div id="countdown"></div>
+                <svg width="150" height="150" viewbox="0 0 250 250" style="margin-top:12px; position: absolute; z-index: -1;">
+                    <path id="border" transform="translate(125, 125)"/>
+                    <path id="loader" transform="translate(125, 125) scale(.84)"/>
+                </svg>
+                <div id="counter" class="timer"></div><div class="clocklabel">Seconds</div>
             </div>
 
             <div class="col-xs-6">
@@ -100,7 +104,6 @@
 {% endblock %}
 
 {% block extra_body %}
-<script src="{% static 'js/jquery.countdown360.js' %} " type="text/javascript" charset="utf-8"></script>
 <script src="{% static 'js/jquery.playSound.js' %} " type="text/javascript"></script>
 <script src="{% static 'js/spin.min.js' %} " type="text/javascript"></script>
 <script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
@@ -146,13 +149,66 @@
 </script>
 
 <script type="text/javascript" charset="utf-8">
-    $("#countdown").countdown360({
-       	 radius      : 60,
-         seconds     : 300,
-         fontColor   : '#FFFFFF',
-         autostart   : false,
-         onComplete  : function () { $.playSound("{% static 'audio/alarm_alert' %}"); }
-    }).start()
+    var loader = document.getElementById('loader')
+  , border = document.getElementById('border')
+  , a = 0
+  , b = Math.PI
+  , t = 300;
+
+    (function draw() {
+      a++;
+      if(a == 360){return 0;}
+      a %= 360;
+      var r = ( a * b / 180 )
+        , x = Math.sin( r ) * 125
+        , y = Math.cos( r ) * - 125
+        , mid = ( a > 180 ) ? 1 : 0
+        , anim = 'M 0 0 v -125 A 125 125 1 '
+               + mid + ' 1 '
+               +  x  + ' '
+               +  y  + ' z';
+      //[x,y].forEach(function( d ){
+      //  d = Math.round( d * 1e3 ) / 1e3;
+      //});
+
+      loader.setAttribute( 'd', anim );
+      border.setAttribute( 'd', anim );
+
+      setTimeout(draw, t); // Redraw
+    })();
+
+    function RecurringTimer(callback, delay) {
+        var timerId, start, remaining = delay;
+
+        this.pause = function() {
+            window.clearTimeout(timerId);
+            remaining -= new Date() - start;
+        };
+
+        var resume = function() {
+            start = new Date();
+            timerId = window.setTimeout(function() {
+                remaining = delay;
+                resume();
+                callback();
+            }, remaining);
+        };
+
+        this.resume = resume;
+
+        this.resume();
+    }
+
+    var timer = new RecurringTimer(function() {
+        if (++count < 100){
+            document.getElementById("counter").style.marginLeft = "20%";
+        }else{document.getElementById("counter").style.marginLeft = "10%";}
+        if (count < 10){
+                document.getElementById("counter").innerHTML = ("0" + count).slice(-2);
+            }else {document.getElementById("counter").innerHTML = count;}
+    }, 1000);
+
+    var count = 0;
 </script>
 
 <script type="text/javascript">
@@ -172,10 +228,11 @@
 <script type="text/javascript" charset="utf-8">
     $(document).on('click', '.option', function (event){
         var id = $(this).attr("id");
+        var time_lapse = $("#counter").html();
         $.ajax({
             type: "GET",
             url: {% url 'get_dialogues' %},
-            data: {csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value, id: id, type: '2'},
+            data: {csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value, id: id, type: '2', time_lapse: time_lapse},
             dataType: "json",
             success: function (response){
                 if (response['status']){

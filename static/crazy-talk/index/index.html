@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>CrazyTalk Web Player</title>
+		<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
+		<script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
+		<script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>		
+		<script type='text/javascript'>
+		<!--
+			var player = new CTWebPlayer();			
+			$(document).ready( function() {
+				SetPlayerResolution( 256, 256 );
+				player.init( $("#unityPlayer")[0], {
+					playerUrl: "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?",
+					loaded: StartWebPlayer
+				} );				
+			});
+			function StartWebPlayer() {
+				player.showPlaybar( true );
+				player.setLoop( false );
+				player.setVolume( 100 );
+				player.setLookat( "player" );	
+				player.setLookatStrength( "medium" );	
+				
+				var fadeInSec = 0;
+				var backgroundImage = "";
+				if ( backgroundImage.length ) {
+					var autoPlay = 0;
+					player.loadProject( "default.uctproject", {
+						playAfter: -1,
+						showActor: false,
+						showBackground: false,
+						idleMotionUrl: "CTDefWebPreview.uctidle",
+						loaded: function( status ) {
+							player.setBackgroundColor( { r:255,g:255,b:255 } );						
+							player.loadBackground( backgroundImage, {
+								fit:"fill",
+								alpha: 0,
+								loaded: function( status ) {
+									player.showActor( true, fadeInSec );
+									player.showBackground( true );
+									if ( autoPlay >= 0 ) player.play( autoPlay );
+								}
+							}); 
+						}
+					});
+				} else {
+					player.loadProject( "default.uctproject", {
+						playAfter: 0,
+						showActor: ( fadeInSec <= 0.0 ),
+						idleMotionUrl: "CTDefWebPreview.uctidle",
+						loaded: function( status ) {
+							player.setBackgroundColor( { r:255,g:255,b:255 } );
+							if ( fadeInSec > 0.0 ) player.showActor( true, fadeInSec );
+						}
+					});
+				}
+			}
+			function SetPlayerResolution( width, height ) {
+				$("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
+			}
+		-->
+		</script>		
+		<style type="text/css">
+		<!--
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			background-color: rgb( 168, 168, 168 );
+			color: black;
+			text-align: center;
+		}
+		a:link, a:visited { text-decoration: underline;
+			color: #333333;
+		}
+		a:active, a:hover { text-decoration: none;
+			color: #171717;
+		}
+		p.header {
+			font-size: 30px;
+		}
+		p.header span {
+			font-weight: bold;
+		}
+		p.footer {
+			font-size: 14px;
+ 		}
+		div.broken,
+		div.missing {
+			margin: auto;
+			position: relative;
+			top: 50%;
+			width: 193px;
+		}
+		div.broken a,
+		div.missing a {
+			height: 63px;
+			position: relative;
+			top: -31px;
+		}
+		div.broken img,
+		div.missing img {
+			border-width: 0px;
+		}
+		div.broken {
+			display: none;
+		}
+		div#unityPlayer {
+			cursor: default;
+			height: 480px;
+			width: 640px;
+			margin: 0 auto;
+		}
+		-->
+		</style>		
+	</head>
+	<body>
+		<p class="header"><span>Preview</span></p>
+		<div class="content">
+			<div id="unityPlayer" class="drsElement drsMoveHandle">
+				<div class="missing">
+					<a href="http://unity3d.com/webplayer/" title="Unity Web Player. Install now!">
+						<img alt="Unity Web Player. Install now!" src="http://webplayer.unity3d.com/installation/getunity.png" width="193" height="63" />
+					</a>
+				</div>
+			</div>
+		</div>
+		<p class="footer"> Powered by <a href="http://www.reallusion.com/crazytalk/crazytalk.aspx" target="_blank" title="Go to Reallusion CrazyTalk">CrazyTalk</a> </p>
+	</body>
+</html>
