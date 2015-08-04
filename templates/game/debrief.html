@@ -6,9 +6,12 @@ Debriefing
 {% endblock %}
 
 {% block content %}
+    <div class="alert alert-success" role="alert">Well done! You have successfully completed the scenario. To restart the game please click on the button below or proceed to the <a href="#" style="color:#fff;">survey</a>.</div>
     <div class="row">
         <div class="col-sm-12">
-            <h1 class="pageHeading">{{ scenario.title }} Debrief</h1>
+            <h1 class="pageHeading">{{ scenario.title }} Debrief
+                <a href="{% url 'game' script_id %}" style="color:#2c3e50;"><span class="pull-right glyphicon glyphicon-repeat" style="padding-top:5px;font-size:30px;" aria-hidden="true" title="Play Again"></span></a>
+            </h1>
         </div>
         <div class="clearfix"></div>
 

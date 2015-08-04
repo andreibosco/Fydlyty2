@@ -433,6 +433,7 @@ def debrief(request, script_id, template_name):
         return HttpResponseRedirect(reverse('index'))
 
     scenario = Scenario.objects.get(script = script)
+    script_id = script.id
 
     filename = "Fydlyty2/media/scenarios/" + str(request.user) + '_' + str(scenario) + '.txt'
     if not os.path.isfile(filename):
@@ -486,6 +487,7 @@ def debrief(request, script_id, template_name):
         else:
             i+=1
     data = {
+        'script_id': script_id,
         'scenario': scenario,
         'script': script,
         'game_type': game_type,
