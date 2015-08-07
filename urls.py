@@ -32,4 +32,10 @@ urlpatterns = [
 
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+
+    url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': settings.STATIC_ROOT}),
 ]
+
+handler404 = 'Fydlyty2.accounts.views.handler404'
+handler500 = 'Fydlyty2.accounts.views.handler500'
