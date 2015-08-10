@@ -99,7 +99,12 @@
                 10%
             </div>
         </div>
+        <audio id="audio">
+            <source id= "audio_src" src="" type="audio/mpeg">
+                Your browser does not support the audio element.
+        </audio>
     </div>
+
 
 {% endblock %}
 
@@ -142,8 +147,12 @@
         }, 1000);
 
        setTimeout(function(){
+            audio = document.getElementById("audio");
+            audio.src = "/media/audio/{{ intro_file }}.mp3";
+            audio.load();
             player.play();
-            $.playSound("/media/audio/{{ intro_file }}");
+            audio.play();
+            playerStop();
         }, 6000);
 	});
 </script>
@@ -218,8 +227,12 @@
             $("#dialogues").fadeIn(1000, function() {
                 $(this).css("display", "inline");
                 $(this).css("opacity", 100);
+                audio = document.getElementById("audio");
+                audio.src = "/media/audio/{{ filename }}.mp3";
+                audio.load();
                 player.play();
-                $.playSound("/media/audio/{{ filename }}");
+                audio.play();
+                playerStop();
             });
         });
     });
@@ -252,9 +265,14 @@
                     });
                     setTimeout(function(){
                         player.play();
-                        var audio_path = '{{ MEDIA_URL }}audio/' + response['filename'];
-                        $.playSound(audio_path);
-                    }, 6000);
+                        var audio_path = '{{ MEDIA_URL }}audio/' + response['filename'] + '.mp3';
+                        audio = document.getElementById("audio");
+                        audio.src = audio_path;
+                        audio.load();
+                        player.play();
+                        audio.play();
+                        playerStop();
+                    }, 3000);
                     var s = '';
                     for (var i = 0; i < response['gp_dialogues'].length; i++){
                         s = s + "<tr><td class=\"option\" id=\"" + response['gp_dialogues'][i]['id'] + "\" style=\"height: 110px;\"><a href=\"javascript:void(0)\"><strong>Game Player: </strong></a>" + response['gp_dialogues'][i]['utterance'] + "</td></tr>";
@@ -311,6 +329,14 @@
 
     function SetPlayerResolution( width, height ) {
         $("#unityPlayer").css( {'width':width.toString()+'px', 'height':height.toString()+'px'} );
+    }
+</script>
+
+<script type="text/javascript">
+    function playerStop(){
+        document.getElementById('audio').addEventListener("ended",function() {
+            player.stop();
+        });
     }
 </script>
 {% endblock %}
