@@ -54,21 +54,19 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
                     <li class="hidden">
                         <a href="#page-top"></a>
                     </li>
                     <li class="page-scroll">
-                        <a href="#portfolio">Scenarios</a>
+                        <a href="/#about">About</a>
                     </li>
-                    {% if user.is_authenticated %}
                     <li class="page-scroll">
                         <a href="{% url 'scenarios_list' %}">Play</a>
                     </li>
-                    {% endif %}
                     <li class="page-scroll">
-                        <a href="#about">About</a>
+                        <a href="/#portfolio">Scenarios</a>
                     </li>
-                    {% if user.is_authenticated %}
                     <li class="page-scroll">
                         <a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a>
                     </li>

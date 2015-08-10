@@ -434,10 +434,15 @@ def debrief(request, script_id, template_name):
 
     scenario = Scenario.objects.get(script = script)
     script_id = script.id
+    attempt_number = 1
 
-    filename = "Fydlyty2/media/scenarios/" + str(request.user) + '_' + str(scenario) + '.txt'
-    if not os.path.isfile(filename):
-        return HttpResponseRedirect(reverse('index'))
+    while True:
+        check_filename = "Fydlyty2/media/scenarios/" + str(request.user) + '_' + str(scenario) + '_' + str(attempt_number) + '.txt'
+        if os.path.isfile(check_filename):
+            filename = check_filename
+            attempt_number += 1
+        else:
+            break
     with open(filename, 'r') as txtfile:
         attempt = txtfile.readlines()
     i = 0
@@ -527,7 +532,17 @@ def write_scenario(scenario = None, script = None, user = None,
                     parent_dialogue = None, game_player = None,
                     choice = None, scenario_type = 'B', type = 'N', time_lapse = 0):
 
-    filename = "Fydlyty2/media/scenarios/" + str(user) + '_' + str(scenario) + '.txt'
+    attempt_number = 1
+    while True:
+        filename = "Fydlyty2/media/scenarios/" + str(user) + '_' + str(scenario) + '_' + str(attempt_number) + '.txt'
+        if os.path.isfile(filename):
+            with open(filename) as myfile:
+                if 'THE END' in list(myfile)[-1]:
+                    attempt_number += 1
+                else:
+                    break
+        else:
+            break
     with open(filename, 'a') as txtfile:
         if type == 'N':
             txtfile.write('Scenario: ')
@@ -559,5 +574,5 @@ def write_scenario(scenario = None, script = None, user = None,
             txtfile.write('Selection: ')
             txtfile.write(str(choice.utterance) + '\n')
             txtfile.write('Character Mood: ')
-            txtfile.write(str(choice.get_mood_display()) + '\n' + '------------------------------------------------------------------------------------------------------------------------------------------------------------------- \n')
+            txtfile.write(str(choice.get_mood_display()) + '\n' + '---------------------------------------------------------------------------THE END---------------------------------------------------------------------------------- \n')
     return True
