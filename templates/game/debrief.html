@@ -6,7 +6,11 @@ Debriefing
 {% endblock %}
 
 {% block content %}
-    <div class="alert alert-success" role="alert">Well done! You have successfully completed the scenario. To restart the game please click on the button below or proceed to the <a href="http://fluidsurveys.com/surveys/freegadgets/usability-testing-geq/" style="color:#fff;">survey</a>.</div>
+    {% if scenario_type == 'B' %}
+        <div class="alert alert-success" role="alert">Well done! You have successfully completed the scenario. To restart the game please click on the restart button below or proceed to the <a href="http://fluidsurveys.com/surveys/freegadgets/usability-testing-geq/?TEST_DATA=&_cb=2pP9ZN4SqA" style="color:#fff;">SURVEY</a>.</div>
+    {% else %}
+        <div class="alert alert-success" role="alert">Well done! You have successfully completed the scenario. To restart the game please click on the button below or proceed to the <a href="http://fluidsurveys.com/surveys/freegadgets/usability-testing-geq-complex-zk/?TEST_DATA=&_cb=cdUT9WltNP" style="color:#fff;">survey</a>.</div>
+    {% endif %}
     <div class="row">
         <div class="col-sm-12">
             <h1 class="pageHeading">{{ scenario.title }} Debrief
@@ -100,7 +104,16 @@ Debriefing
 
                 <hr>
             {% endfor %}
-
+                <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-10">
+                    <a href="{% url 'game' script_id %}"><button type="submit" class="btn" />Play Again</button></a>
+                    {% if scenario_type == 'B' %}
+                        <a href="http://fluidsurveys.com/surveys/freegadgets/usability-testing-geq/?TEST_DATA=&_cb=2pP9ZN4SqA"><button type="submit" class="btn" />Fill Survey</button></a>
+                    {% else %}
+                        <a href="http://fluidsurveys.com/surveys/freegadgets/usability-testing-geq-complex-zk/?TEST_DATA=&_cb=cdUT9WltNP"><button type="submit" class="btn" />Fill Survey</button></a>
+                    {% endif %}
+                </div>
+                </div>
         </div>
     </div>
 {% endblock %}

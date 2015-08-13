@@ -433,9 +433,9 @@ def debrief(request, script_id, template_name):
         return HttpResponseRedirect(reverse('index'))
 
     scenario = Scenario.objects.get(script = script)
+    scenario_type = scenario.type
     script_id = script.id
     attempt_number = 1
-
     while True:
         check_filename = "Fydlyty2/media/scenarios/" + str(request.user) + '_' + str(scenario) + '_' + str(attempt_number) + '.txt'
         if os.path.isfile(check_filename):
@@ -498,6 +498,7 @@ def debrief(request, script_id, template_name):
         'game_type': game_type,
         'user': user,
         'convo_list': convo_list,
+        'scenario_type': scenario_type,
     }
     return render_to_response(template_name, context_instance=RequestContext(request, data))
 
