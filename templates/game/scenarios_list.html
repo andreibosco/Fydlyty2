@@ -11,9 +11,10 @@ List of scenarios
         </div>
         <div class="clearfix"></div>
 
+        {% if basic_scenarios %}
         <div class="list-group ml10">
             <div class="list-group-item active">
-                <h4 class="list-group-item-heading active">Basic Scenarios
+                <h4 class="list-group-item-heading active">Scenario X
                 {% ifequal profile.role 'in' %}
                     <a href="{% url 'create_scenario' '1' %}" class="plus" title="Create a new basic scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
                 {% endifequal %}
@@ -31,10 +32,11 @@ List of scenarios
             {% endif %}
 
         </div>
-
+        {% endif %}
+        {% if complex_scenarios %}
         <div class="list-group ml10">
             <div class="list-group-item active">
-                <h4 class="list-group-item-heading active">Advance Scenarios
+                <h4 class="list-group-item-heading active">Scenario Y
                 {% ifequal profile.role 'in' %}
                     <a href="{% url 'create_scenario' '2' %}" class="plus" title="Create a new complex scenario"><span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></a></h4>
                 {% endifequal %}
@@ -52,5 +54,6 @@ List of scenarios
             {% endif %}
 
         </div>
+        {% endif %}
     </div>
 {% endblock %}

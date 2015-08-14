@@ -334,8 +334,15 @@ def scenarios_list(request, template_name):
     Show list of basic & complex scenarios
     """
     profile = UserProfile.objects.get(user = request.user)
-    basic_scripts = Script.objects.filter(scenario__type = 'B').order_by('-id')
-    complex_scripts = Script.objects.filter(scenario__type = 'C').order_by('-id')
+    if profile.user.username in settings.BASIC_USER_LIST:
+        basic_scripts = Script.objects.filter(scenario__type = 'B').order_by('-id')
+        complex_scripts = None
+    elif profile.user.username in settings.COMPLEX_USER_LIST:
+        basic_scripts = None
+        complex_scripts = Script.objects.filter(scenario__type = 'C').order_by('-id')
+    else:
+        basic_scripts = None
+        complex_scripts = None
 
     data = {
         'profile': profile,

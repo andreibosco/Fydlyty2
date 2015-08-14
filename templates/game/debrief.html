@@ -38,7 +38,11 @@ Debriefing
             <div class="form-group">
                 <label class="col-sm-2 control-label">Game Type</label>
                 <div class="controls">
-                    {{ game_type }}
+                    {% if scenario_type == 'B' %}
+                        Scenario X
+                    {% else %}
+                        Scenario Y
+                    {% endif %}
                 </div>
             </div>
 
