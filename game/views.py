@@ -458,7 +458,7 @@ def debrief(request, script_id, template_name):
         attempt = txtfile.readlines()
     i = 0
     convo_list = []
-    while True:
+    while i < 150:
         if attempt[i].split(':')[0] == 'Scenario':
             scenario = attempt[i].split(':')[1]
             i+=1
@@ -500,6 +500,9 @@ def debrief(request, script_id, template_name):
                 elif attempt[j].split(':')[0] == 'Character Mood':
                     item['CharacterMood'] = attempt[j].split(':')[1].strip()
                     j+=1
+                else:
+                    i = j
+                    break
         else:
             i+=1
     data = {
