@@ -131,7 +131,7 @@ LANGUAGE = {
 HELP = {
     'N': ['Good Work! Build upon your efforts.', 'You have started to understand this game really well.', 'Bravo!'],
     'M': ['Oh no! They didn\'t like it.', 'Don\'t repeat this mistake again.', 'They got upset. Try not to repeat this mistake again'],
-    'A': ['This is serious! You have to be careful',],
+    'A': ['This is serious! You have to be careful.', 'Not the most suitable choice of words.', 'Maybe a different option next time.'],
 }
 
 BASIC_USER_LIST = ['test']
