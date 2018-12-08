@@ -133,3 +133,6 @@ HELP = {
     'M': ['Oh no! They didn\'t like it.', 'Don\'t repeat this mistake again.', 'They got upset. Try not to repeat this mistake again'],
     'A': ['This is serious! You have to be careful',],
 }
+
+BASIC_USER_LIST = ['test']
+COMPLEX_USER_LIST = ['andreibosco']
