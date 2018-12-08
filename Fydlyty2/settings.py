@@ -82,8 +82,10 @@ WSGI_APPLICATION = 'Fydlyty2.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'fydlyty'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'fydlyty',
+        'USER': 'test',
+        'PASSWORD': 'test',
     }
 }
 
