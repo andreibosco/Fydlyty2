@@ -3,3 +3,9 @@
 
 # virtual environment
 venv/
+
+# visual studio code
+.vscode/
+
+# media files
+Fydlyty2/media/
