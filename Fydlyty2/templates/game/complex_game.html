@@ -112,7 +112,7 @@
 <script src="{% static 'js/jquery.playSound.js' %} " type="text/javascript"></script>
 <script src="{% static 'js/spin.min.js' %} " type="text/javascript"></script>
 <script type='text/javascript' src='https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js'></script>
-<script type='text/javascript' src='http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.min.js'></script>
+<script type='text/javascript' src="{% static 'js/CTWebPlayer.js' %}"></script>
 
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function(){
@@ -312,7 +312,8 @@
 <script type='text/javascript'>
     var player = new CTWebPlayer();
         $(function () {
-            player.playerUrl = "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?";
+            // player.playerUrl = "http://ctinteractive.reallusion.com/ctinteractive/1.0/CTWebPlayer.unity3d?";
+            player.playerUrl = "{% static '3d/CTWebPlayer.unity3d' %}";
             SetPlayerResolution( 750, 580 );
             player.init($("#unityPlayer"), function () {
                 player.loadProject("{{ MEDIA_URL }}CrazyTalkFiles{{ project_path }}", {
